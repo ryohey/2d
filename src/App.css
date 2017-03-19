@@ -1,0 +1,43 @@
+.Block {
+  max-width: 10em;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+  min-width: 5em;
+  position: absolute;
+  display: inline-block;
+}
+
+.Block .code {
+  font-family: monospace;
+  font-size: inherit;
+  border: none;
+  box-sizing: border-box;
+  display: block;
+}
+
+.Block .header {
+  min-height: 1.5em;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.Block .name {
+  padding: 0.25em 0.5em;
+}
+
+.Block {
+  border-radius: 0.2em;
+}
+
+.Block .ports {
+  display: flex;
+}
+
+.Block .inputs, .Block .outputs {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding: 0.5em;
+}
+
+.Block .outputs {
+  text-align: right;
+}

@@ -1,22 +1,66 @@
+:root {
+  --background-color: hsl(220, 9%, 25%);
+  --secondary-background-color: hsl(218, 9%, 17%);
+  --divider-color: hsl(230, 8%, 15%);
+  --text-color: hsl(222, 94%, 94%);
+  --secondary-text-color: hsl(222, 16%, 44%);
+  --highlighted-text-color: hsl(221, 22%, 65%);
+  --purple-color: hsl(282, 44%, 64%);
+  --red-color: hsl(350, 40%, 58%);
+  --yellow-color: hsl(28, 56%, 62%);
+  --green-color: hsl(108, 28%, 59%);
+  --blue-color: hsl(223, 90%, 61%);
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.App {
+  height: 100%;
+}
+
+textarea {
+  font-size: inherit;
+  background-color: inherit;
+  color: inherit;
+}
+
 .Block {
+  background-color: var(--secondary-background-color);
   max-width: 10em;
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
   min-width: 5em;
   position: absolute;
   display: inline-block;
+  overflow: hidden;
+  user-select: none;
+  cursor: default;
 }
 
 .Block .code {
-  font-family: monospace;
-  font-size: inherit;
+  color: var(--secondary-text-color);
+  font-family: inherit;
+  font-size: 90%;
   border: none;
   box-sizing: border-box;
   display: block;
+  padding: 0.5em;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .Block .header {
   min-height: 1.5em;
-  background: rgba(0, 0, 0, 0.02);
+  background: var(--blue-color);
+  border-bottom: 1px solid var(--divider-color);
+}
+
+.Block .header:hover {
+  background: var(--background-color);
 }
 
 .Block .name {
@@ -40,4 +84,35 @@
 
 .Block .outputs {
   text-align: right;
+}
+
+.Block .Port:hover {
+  color: var(--highlighted-text-color);
+}
+
+.Stage {
+  height: 100%;
+  position: relative;
+}
+
+.Stage canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.Toolbar {
+  background: var(--secondary-background-color);
+  border-bottom: 1px solid var(--background-color);
+  padding: 1em;
+}
+
+.ToolbarButton {
+  font-size: 110%;
+  padding: 0em 0.5em;
+  background: var(--background-color);
+}
+
+.ToolbarButton:hover {
+  background: rgba(255, 255, 255, 0.17);
 }

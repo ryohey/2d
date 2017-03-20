@@ -64,9 +64,11 @@ export default class Stage extends Component {
 
   render() {
     const { blockStore } = this.props
+    const { previewBlock } = blockStore
 
     const onMouseUpStage = (e, id) => {
       this.click = null
+      blockStore.previewBlock = null
     }
 
     const onDoubleClickStage = e => {
@@ -82,6 +84,16 @@ export default class Stage extends Component {
     }
 
     const onMouseMoveStage = (e, id) => {
+      if (blockStore.previewBlock) {
+        const bounds = e.currentTarget.getBoundingClientRect()
+        blockStore.previewBlock = {
+          ...blockStore.previewBlock,
+          x: e.clientX - bounds.left,
+          y: e.clientY - bounds.top,
+        }
+        return
+      }
+
       const { click } = this
       if (!click) {
         return
@@ -185,6 +197,28 @@ export default class Stage extends Component {
       }))
     }
 
+    const onClickBlockRemove = (e, id) => {
+      blockStore.removeBlock(id)
+    }
+
+    const onClickBlockDupulicate = (e, id) => {
+      const block = blockStore.getBlock(id)
+      blockStore.addBlock({
+        ...block,
+        y: block.y + 180
+      })
+    }
+
+    const onClickBlockMakeReference = (e, id) => {
+      const block = blockStore.getBlock(id)
+      const link = block.link || id
+      blockStore.addBlock({
+        link,
+        x: block.x,
+        y: block.y + 180
+      })
+    }
+
     this.renderEdges()
 
     return <div
@@ -204,14 +238,18 @@ export default class Stage extends Component {
           onMouseDownOutput={onMouseDownBlockOutput}
           onMouseUpOutput={onMouseUpBlockOutput}
           onDoubleClickBody={onDoubleClickBlockBody}
+          onClickDupulicate={onClickBlockDupulicate}
+          onClickRemove={onClickBlockRemove}
+          onClickMakeReference={onClickBlockMakeReference}
           {...b}
           inputLength={blockStore.getBlockInputLength(b.id)}
           name={(linked || b).name}
           code={linked ? "" : b.code}
-          linked={linked !== undefined}
+          type={linked !== undefined ? "linked" : "normal"}
           key={b.id}
           containerRef={c => this.blockElements[b.id] = c} />
       })}
+      {previewBlock && <Block key="preview" type="preview" {...previewBlock} />}
       <Modal
         contentLabel="edit block"
         isOpen={this.state.modalIsOpen}

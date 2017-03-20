@@ -61,6 +61,7 @@ textarea, input {
   position: absolute;
   top: 0;
   left: 0;
+  user-select: none;
 }
 
 .Toolbar {
@@ -160,3 +161,17 @@ textarea, input {
   padding: 1em;
   overflow-y: auto;
 }
+
+.ToolBox {
+  display: flex;
+  align-items: flex-start;
+}
+
+.ToolBox .item {
+  padding: 1em;
+  width: 100%;
+  border-bottom: 1px solid var(--divider-color);
+  user-select: none;
+}
+
+.ToolBox {}

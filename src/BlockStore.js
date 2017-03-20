@@ -4,6 +4,7 @@ import _ from "lodash"
 export default class BlockStore { constructor() { extendObservable(this, {
   blocks: [],
   edges: [],
+  previewBlock: null,
 
   getBlock(id) {
     return this.blocks.filter(b => b.id === id)[0]
@@ -40,7 +41,7 @@ export default class BlockStore { constructor() { extendObservable(this, {
   removeBlock: action(id => {
     this.blocks = _.reject(this.blocks, { id })
     this.edges = _.reject(this.edges, e => e.toId === id || e.fromId === id)
-    this.blocks.filter(b => b.link === id).forEach(b => this.removeBlock(b.id)) 
+    this.blocks.filter(b => b.link === id).forEach(b => this.removeBlock(b.id))
   }),
 
   lastBlockId() {

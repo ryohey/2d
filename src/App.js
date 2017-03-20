@@ -171,6 +171,8 @@ function _CodeOutput({ blockStore }) {
 const Stage = observer(_Stage)
 const CodeOutput = observer(_CodeOutput)
 
+
+
 class App extends Component {
   render() {
     const onClickPlay = () => {
@@ -186,6 +188,19 @@ class App extends Component {
       </div>
       <div className="main">
         <div className="ToolBox">
+          <div className="item" onMouseDown={e => {
+            e.stopPropagation()
+            const bounds = e.target.getBoundingClientRect()
+            blockStore.previewBlock = {
+              x: e.clientX - bounds.width,
+              y: e.clientY - bounds.top,
+              inputLength: 1,
+              name: "func",
+              code: ""
+            }
+          }}>
+            <div className="name">Script</div>
+          </div>
         </div>
         <div className="content">
           <Stage blockStore={blockStore} />

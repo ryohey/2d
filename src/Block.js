@@ -1,4 +1,4 @@
-import React from "react"
+import React, { Component } from "react"
 import Icon from "./Icon"
 import "./Block.css"
 
@@ -8,13 +8,25 @@ function Port({ type, onMouseDown, onMouseUp }) {
   </div>
 }
 
-export default function Block({
+function DropDownMenu({ items, onRequestClose }) {
+  function onClick(e, handler) {
+    onRequestClose()
+    handler(e)
+  }
+  return <div className="drop-down">
+    {items.map((item, i) =>
+      <div onClick={e => onClick(e, item.onClick)} key={i}>{item.name}</div>
+    )}
+  </div>
+}
+
+function Block({
   code,
   name,
   x,
   y,
   id,
-  linked,
+  type,
   inputLength,
   containerRef,
   onMouseDownHeader,
@@ -23,11 +35,18 @@ export default function Block({
   onMouseUpInput,
   onMouseDownOutput,
   onMouseUpOutput,
-  onDoubleClickBody
+  onDoubleClickBody,
+  onClickMakeReference,
+  onClickDupulicate,
+  onClickRemove,
+  isMenuOpened,
+  openMenu,
+  closeMenu,
 }) {
+  const linked = type === "linked"
 
   return <div
-    className={`Block ${linked ? "linked" : ""}`}
+    className={`Block ${type}`}
     style={{ left: x, top: y }}
     ref={containerRef}>
     <div
@@ -35,7 +54,21 @@ export default function Block({
       onMouseDown={e => onMouseDownHeader(e, id)}
       onDoubleClick={e => onDoubleClickHeader(e, id)}>
       <div className="name">{linked && <Icon name="link" className="link-icon" />}{name}</div>
+      <div
+        className="menu-button"
+        onDoubleClick={e => e.stopPropagation()}
+        onClick={e => {
+          e.stopPropagation()
+          isMenuOpened ? closeMenu() : openMenu()
+        }}>
+        <Icon name="menu-down"/>
+      </div>
     </div>
+    {isMenuOpened && <DropDownMenu items={[
+      { name: "make reference", onClick: e => onClickMakeReference(e, id) },
+      { name: "duplicate", onClick: e => onClickDupulicate(e, id) },
+      { name: "remove", onClick: e => onClickRemove(e, id) },
+    ]} onRequestClose={closeMenu} />}
     <div className="ports">
       <div className="inputs">
         {[...Array(inputLength).keys()].map(i =>
@@ -54,4 +87,25 @@ export default function Block({
       <pre className="code" onDoubleClick={e => onDoubleClickBody(e, id)}>{code}</pre>
     }
   </div>
+}
+
+
+export default class extends Component {
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      isMenuOpened: false
+    }
+  }
+
+  render() {
+    return <Block {...this.props} {...this.state}
+      openMenu={() => {
+        this.setState({ isMenuOpened: true })
+      }}
+      closeMenu={() => {
+        this.setState({ isMenuOpened: false })
+      }} />
+  }
 }

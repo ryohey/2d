@@ -8,6 +8,7 @@
   overflow: hidden;
   user-select: none;
   cursor: default;
+  overflow: visible;
 }
 
 .Block .code {
@@ -28,18 +29,30 @@
   min-height: 1.5em;
   background: var(--blue-color);
   border-bottom: 1px solid var(--divider-color);
+  padding: 0.25em 0.5em;
+  display: flex;
+  align-items: center;
 }
 
-.Block.linked .header {
-  background: var(--background-color);
+.Block .header .menu-button {
+  margin-left: 0.5em;
+  cursor: pointer;
 }
 
 .Block .header:hover {
   background: var(--secondary-blue-color);
 }
 
+.Block.linked .header {
+  background: var(--background-color);
+}
+
+.Block.linked .header:hover {
+  background: var(--secondary-background-color);
+}
+
 .Block .name {
-  padding: 0.25em 0.5em;
+  flex-grow: 1;
 }
 
 .Block {
@@ -67,4 +80,31 @@
 
 .Block .header .link-icon {
   margin-right: 0.5em;
+}
+.Block.preview {
+  color: var(--text-color);
+  opacity: 0.6;
+  border: 1px solid var(--secondary-text-color);
+}
+
+.Block.preview .header {
+  background: var(--secondary-text-color);
+}
+
+.Block .drop-down {
+  position: absolute;
+  background: var(--background-color);
+  padding: 0.5em 0em;
+  font-size: 90%;
+  width: 10em;
+  z-index: 100;
+  box-shadow: 0 2px 9px rgba(0, 0, 0, 0.24);
+}
+
+.Block .drop-down>div {
+  padding: 0.5em;
+}
+
+.Block .drop-down>div:hover {
+  background: var(--secondary-background-color);
 }

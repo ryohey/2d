@@ -1,0 +1,62 @@
+.Block {
+  background-color: var(--secondary-background-color);
+  max-width: 10em;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+  min-width: 5em;
+  position: absolute;
+  display: inline-block;
+  overflow: hidden;
+  user-select: none;
+  cursor: default;
+}
+
+.Block .code {
+  color: var(--secondary-text-color);
+  font-family: inherit;
+  font-size: 90%;
+  border: none;
+  box-sizing: border-box;
+  display: block;
+  padding: 0.5em;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.Block .header {
+  min-height: 1.5em;
+  background: var(--blue-color);
+  border-bottom: 1px solid var(--divider-color);
+}
+
+.Block .header:hover {
+  background: var(--secondary-blue-color);
+}
+
+.Block .name {
+  padding: 0.25em 0.5em;
+}
+
+.Block {
+  border-radius: 0.2em;
+}
+
+.Block .ports {
+  display: flex;
+}
+
+.Block .inputs, .Block .outputs {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding: 0.5em;
+}
+
+.Block .outputs {
+  text-align: right;
+}
+
+.Block .Port:hover {
+  color: var(--highlighted-text-color);
+}

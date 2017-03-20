@@ -1,5 +1,12 @@
 import _ from "lodash"
 
+function wrapPromiseAll(values) {
+  if (values.length === 1) {
+    return `${values[0]}`
+  }
+  return `Promise.all([${values.join(", ")}])`
+}
+
 export default function buildCode(blocks, edges) {
   const func = blocks
     .filter(b => b.code)
@@ -64,22 +71,33 @@ export default function buildCode(blocks, edges) {
       break
     }
 
+    /**
+    const out6_p = Promise.all([
+      out4_p,
+      out5_p
+    ]).then(([out4, out5]) =>
+      add(out4, out5)
+    )
+    */
     terminals.forEach(t => {
       const { id, inputs } = t
       let block = _.find(blocks, { id })
       if (block.link !== undefined) {
         block = _.find(blocks, { id: block.link })
       }
-      const varName = block.isAsync ?
-        `out${outputIndex}_p` : `out${outputIndex}`
+      const promiseInputs = inputs.filter(i => i.endsWith("_p"))
+      const isAsync = block.isAsync || promiseInputs.length > 0
+      const varName = isAsync ? `out${outputIndex}_p` : `out${outputIndex}`
       outputIndex++
       outputVarNames[id] = varName
       const funcName = block.name || `__func${id}`
-      const promiseInput = _.find(inputs, i => i.endsWith("_p"))
-      if (promiseInput) {
-        const resultName = promiseInput.split("_p")[0]
-        procs.push(`const ${varName} = ${promiseInput}.then(${resultName} =>
-  ${funcName}(${inputs.map(i => i === promiseInput ? resultName : i).join(", ")})
+      if (promiseInputs.length > 0) {
+        const resultNames = promiseInputs.map(i => i.split("_p")[0])
+        const promise = wrapPromiseAll(promiseInputs)
+        const params = inputs.map(i => i.split("_p")[0]).join(", ") // _p を除去する
+        const result = resultNames.length === 1 ? `${resultNames}` : `([${resultNames.join(", ")}])`
+        procs.push(`const ${varName} = ${promise}.then(${result} =>
+  ${funcName}(${params})
 )`)
       } else {
         procs.push(`const ${varName} = ${funcName}(${inputs.join(", ")})`)

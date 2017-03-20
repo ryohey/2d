@@ -1,50 +1,57 @@
 import { extendObservable, action, } from "mobx"
 import _ from "lodash"
 
-export default class BlockStore {
-  constructor() {
-    extendObservable(this, {
-      blocks: [],
-      edges: [],
+export default class BlockStore { constructor() { extendObservable(this, {
+  blocks: [],
+  edges: [],
 
-      getBlock(id) {
-        return this.blocks.filter(b => b.id === id)[0]
-      },
+  getBlock(id) {
+    return this.blocks.filter(b => b.id === id)[0]
+  },
 
-      addBlock: action(block => {
-        this.blocks = [...this.blocks, block]
-      }),
+  addBlock: action(block => {
+    this.blocks = [...this.blocks, {
+      ...block,
+      name: this.getPreferredBlockName(block.name)
+    }]
+  }),
 
-      removeBlock: action(id => {
-        this.setState({
-          blocks: _.reject(this.blocks, { id }),
-          edges: _.reject(this.edges, { toId: id })
-        })
-      }),
+  getPreferredBlockName: requiredName => {
+    let name = requiredName
+    let count = 2
+    while (_.find(this.blocks, { name })) {
+      name = `${requiredName}${count}`
+      count++
+    }
+    return name
+  },
 
-      lastBlockId() {
-        return _.maxBy(this.blocks, "id").id
-      },
+  removeBlock: action(id => {
+    this.blocks = _.reject(this.blocks, { id })
+    this.edges = _.reject(this.edges, { toId: id })
+  }),
 
-      updateBlock: action((id, updater) => {
-        this.blocks = this.blocks.map(b => {
-          if (b.id !== id) {
-            return b
-          }
-          return updater(b)
-        })
-      }),
+  lastBlockId() {
+    return _.maxBy(this.blocks, "id").id
+  },
 
-      addEdge: action((fromId, toId, toIndex) => {
-        const edge = { fromId, toId, toIndex }
-        if (!_.find(this.edges, edge)) {
-          this.edges = [...this.edges, edge]
-        }
-      }),
-
-      removeEdge: action((fromId) => {
-        this.edges = _.reject(this.edges, { fromId })
-      })
+  updateBlock: action((id, updater) => {
+    this.blocks = this.blocks.map(b => {
+      if (b.id !== id) {
+        return b
+      }
+      return updater(b)
     })
-  }
-}
+  }),
+
+  addEdge: action((fromId, toId, toIndex) => {
+    const edge = { fromId, toId, toIndex }
+    if (!_.find(this.edges, edge)) {
+      this.edges = [...this.edges, edge]
+    }
+  }),
+
+  removeEdge: action((fromId) => {
+    this.edges = _.reject(this.edges, { fromId })
+  })
+})}}

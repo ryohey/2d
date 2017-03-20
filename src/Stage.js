@@ -76,7 +76,7 @@ export default class Stage extends Component {
         id: blockStore.lastBlockId() + 1,
         x: e.clientX - bounds.left,
         y: e.clientY - bounds.top,
-        name: "new function",
+        name: "func",
         code: `x => x`
       })
     }
@@ -120,7 +120,7 @@ export default class Stage extends Component {
     const onDoubleClickBlockHeader = (e, id) => {
       this.click = null
       e.stopPropagation()
-      this.removeBlock(id)
+      blockStore.removeBlock(id)
     }
 
     const onMouseDownBlockInput = (e, id, index) => {

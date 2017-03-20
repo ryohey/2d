@@ -9,45 +9,69 @@ import "./App.css"
 
 const blockStore = new BlockStore()
 
-blockStore.blocks = [
+const blocks = [
   {
-    id: 0,
     name: "constant",
     code: "() => 1",
     x: 20,
     y: 20
   },
   {
-    id: 1,
     name: "constant2",
     code: "() => 2",
     x: 20,
     y: 180
   },
   {
-    id: 2,
     name: "add",
     code: "(a, b) => a + b",
-    x: 180,
+    x: 180 * 2,
     y: 20
   },
   {
-    id: 3,
-    name: "log",
-    code: `str => console.log(str)`,
-    x: 370,
+    name: "popup",
+    code: `str => alert(str)`,
+    x: 180 * 3,
+    y: 20
+  },
+  {
+    name: "double",
+    code: `x => x * 2`,
+    x: 180 * 3,
+    y: 180
+  },
+  {
+    link: 4,
+    x: 180,
+    y: 180
+  },
+  {
+    link: 4,
+    x: 180,
     y: 20
   }
 ]
 
+blocks.forEach(b => blockStore.addBlock(b))
+
 blockStore.edges = [
   {
     fromId: 0,
-    toId: 2,
+    toId: 6,
     toIndex: 0
   },
   {
     fromId: 1,
+    toId: 5,
+    toIndex: 0
+  },
+  {
+    fromId: 6,
+    toId: 2,
+    toIndex: 0
+  },
+  {
+    fromId: 5,
     toId: 2,
     toIndex: 1
   },
@@ -59,11 +83,10 @@ blockStore.edges = [
 ]
 
 function buildCode(blocks, edges) {
-  const func = blocks.map(b => `const ${b.name} = ${b.code}`).join("\n")
-  // const procs = edges.map(e => {
-  //   const b = _.find(blocks, { id: e.fromId })
-  //   return `const out1 = ${b.name}()`
-  // }).join("\n")
+  const func = blocks
+    .filter(b => b.code)
+    .map(b => `const ${b.name} = ${b.code}`)
+    .join("\n")
 
   let outputIndex = 0
   let procs = []
@@ -84,7 +107,10 @@ function buildCode(blocks, edges) {
         return null
       }
 
-      const block = _.find(blocks, { id })
+      let block = _.find(blocks, { id })
+      if (block.link !== undefined) {
+        block = _.find(blocks, { id: block.link })
+      }
 
       // TODO: Components.utils.Sandbox を使う
       const func = eval(`() => { return ${block.code} }`)()
@@ -97,7 +123,7 @@ function buildCode(blocks, edges) {
       }
 
       const inputs = _.range(func.length).map(i => {
-        const edge = _.find(edges, { toId: block.id, toIndex: i })
+        const edge = _.find(edges, { toId: id, toIndex: i })
         if (edge) {
           return edge.fromId
         }
@@ -122,10 +148,13 @@ function buildCode(blocks, edges) {
 
     terminals.forEach(t => {
       const { id, inputs } = t
-      const block = _.find(blocks, { id })
+      let block = _.find(blocks, { id })
+      if (block.link !== undefined) {
+        block = _.find(blocks, { id: block.link })
+      }
       const varName = `out${outputIndex++}`
       outputVarNames[id] = varName
-      procs.push(`const ${varName} = ${block.name}(${inputs.join(", ")})`)
+      procs.push(`const ${varName} = ${block.name || `__func${id}`}(${inputs.join(", ")})`)
     })
   }
 
@@ -155,8 +184,14 @@ class App extends Component {
           <Icon name="play" />
         </a>
       </div>
-      <Stage blockStore={blockStore} />
-      <CodeOutput blockStore={blockStore} />
+      <div className="main">
+        <div className="ToolBox">
+        </div>
+        <div className="content">
+          <Stage blockStore={blockStore} />
+          <CodeOutput blockStore={blockStore} />
+        </div>
+      </div>
     </div>
   }
 }

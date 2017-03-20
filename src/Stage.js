@@ -194,8 +194,9 @@ export default class Stage extends Component {
       className="Stage"
       ref={c => this.container = c}>
       <canvas ref={c => this.canvas = c} />
-      {blockStore.blocks.map(b =>
-        <Block
+      {blockStore.blocks.map(b => {
+        const linked = _.find(blockStore.blocks, { id: b.link })
+        return <Block
           onMouseDownHeader={onMouseDownBlockHeader}
           onDoubleClickHeader={onDoubleClickBlockHeader}
           onMouseDownInput={onMouseDownBlockInput}
@@ -204,9 +205,13 @@ export default class Stage extends Component {
           onMouseUpOutput={onMouseUpBlockOutput}
           onDoubleClickBody={onDoubleClickBlockBody}
           {...b}
+          inputLength={blockStore.getBlockInputLength(b.id)}
+          name={(linked || b).name}
+          code={linked ? "" : b.code}
+          linked={linked !== undefined}
           key={b.id}
           containerRef={c => this.blockElements[b.id] = c} />
-      )}
+      })}
       <Modal
         contentLabel="edit block"
         isOpen={this.state.modalIsOpen}

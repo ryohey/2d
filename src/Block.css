@@ -30,6 +30,10 @@
   border-bottom: 1px solid var(--divider-color);
 }
 
+.Block.linked .header {
+  background: var(--background-color);
+}
+
 .Block .header:hover {
   background: var(--secondary-blue-color);
 }
@@ -59,4 +63,8 @@
 
 .Block .Port:hover {
   color: var(--highlighted-text-color);
+}
+
+.Block .header .link-icon {
+  margin-right: 0.5em;
 }

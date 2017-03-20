@@ -24,6 +24,23 @@ body {
   flex-direction: column;
 }
 
+.App>.main {
+  display: flex;
+  height: 100%;
+}
+
+.App>.main>.content {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+}
+
+.ToolBox {
+  width: 10em;
+  background: var(--secondary-background-color);
+  border-right: 1px solid var(--divider-color);
+}
+
 textarea, input, button, pre {
   font-family: inherit;
   font-size: inherit;
@@ -136,8 +153,10 @@ textarea, input {
 
 .CodeOutput {
   min-height: 6em;
+  max-height: 10em;
   background: var(--secondary-background-color);
   border-top: 1px solid var(--divider-color);
   font-size: 90%;
   padding: 1em;
+  overflow-y: auto;
 }

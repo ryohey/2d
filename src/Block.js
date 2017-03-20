@@ -14,6 +14,8 @@ export default function Block({
   x,
   y,
   id,
+  linked,
+  inputLength,
   containerRef,
   onMouseDownHeader,
   onDoubleClickHeader,
@@ -23,22 +25,20 @@ export default function Block({
   onMouseUpOutput,
   onDoubleClickBody
 }) {
-  // TODO: Components.utils.Sandbox を使う
-  const func = eval(`() => { return ${code} }`)()
 
   return <div
-    className="Block"
+    className={`Block ${linked ? "linked" : ""}`}
     style={{ left: x, top: y }}
     ref={containerRef}>
     <div
       className="header"
       onMouseDown={e => onMouseDownHeader(e, id)}
       onDoubleClick={e => onDoubleClickHeader(e, id)}>
-      <div className="name">{name}</div>
+      <div className="name">{linked && <Icon name="link" className="link-icon" />}{name}</div>
     </div>
     <div className="ports">
       <div className="inputs">
-        {[...Array(func.length).keys()].map(i =>
+        {[...Array(inputLength).keys()].map(i =>
           <Port type="right" className="input" key={i}
             onMouseDown={e => onMouseDownInput(e, id, i)}
             onMouseUp={e => onMouseUpInput(e, id, i)} />
@@ -50,6 +50,8 @@ export default function Block({
           onMouseUp={e => onMouseUpOutput(e, id)} />
       </div>
     </div>
-    <pre className="code" onDoubleClick={e => onDoubleClickBody(e, id)}>{code}</pre>
+    {!linked &&
+      <pre className="code" onDoubleClick={e => onDoubleClickBody(e, id)}>{code}</pre>
+    }
   </div>
 }

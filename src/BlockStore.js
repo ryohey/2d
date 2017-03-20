@@ -12,9 +12,20 @@ export default class BlockStore { constructor() { extendObservable(this, {
   addBlock: action(block => {
     this.blocks = [...this.blocks, {
       ...block,
+      id: this.lastBlockId() + 1,
       name: this.getPreferredBlockName(block.name)
     }]
   }),
+
+  getBlockInputLength: (id) => {
+    let block = this.getBlock(id)
+    if (block.link) {
+      block = this.getBlock(block.link)
+    }
+    // TODO: Components.utils.Sandbox を使う
+    const func = eval(`() => { return ${block.code} }`)()
+    return func.length
+  },
 
   getPreferredBlockName: requiredName => {
     let name = requiredName
@@ -28,11 +39,12 @@ export default class BlockStore { constructor() { extendObservable(this, {
 
   removeBlock: action(id => {
     this.blocks = _.reject(this.blocks, { id })
-    this.edges = _.reject(this.edges, { toId: id })
+    this.edges = _.reject(this.edges, e => e.toId === id || e.fromId === id)
+    this.blocks.filter(b => b.link === id).forEach(b => this.removeBlock(b.id)) 
   }),
 
   lastBlockId() {
-    return _.maxBy(this.blocks, "id").id
+    return _.max([...this.blocks.map(b => b.id), -1])
   },
 
   updateBlock: action((id, updater) => {

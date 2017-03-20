@@ -130,10 +130,24 @@ export default class Stage extends Component {
       }
     }
 
+    const openModalWithBlock = (id) => {
+      let block = blockStore.getBlock(id)
+      block = block.link ? blockStore.getBlock(block.link) : block
+      this.setState({
+        modalIsOpen: true,
+        modalInput: {
+          id: block.id,
+          name: block.name,
+          code: block.code,
+          isAsync: block.isAsync
+        }
+      })
+    }
+
     const onDoubleClickBlockHeader = (e, id) => {
       this.click = null
       e.stopPropagation()
-      blockStore.removeBlock(id)
+      openModalWithBlock(id)
     }
 
     const onMouseDownBlockInput = (e, id, index) => {
@@ -152,17 +166,9 @@ export default class Stage extends Component {
     }
 
     const onDoubleClickBlockBody = (e, id) => {
+      this.click = null
       e.stopPropagation()
-      const block = blockStore.getBlock(id)
-      this.setState({
-        modalIsOpen: true,
-        modalInput: {
-          id,
-          name: block.name,
-          code: block.code,
-          isAsync: block.isAsync
-        }
-      })
+      openModalWithBlock(id)
     }
 
     const onMouseDownBlockOutput = (e, id) => {

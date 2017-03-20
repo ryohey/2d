@@ -45,12 +45,8 @@
   background: var(--secondary-blue-color);
 }
 
-.Block.linked .header {
-  background: var(--background-color);
-}
-
-.Block.linked .header:hover {
-  background: var(--secondary-background-color);
+.Block.async .header {
+  background: var(--yellow-color);
 }
 
 .Block .name {

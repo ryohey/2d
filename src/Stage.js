@@ -245,7 +245,8 @@ export default class Stage extends Component {
           inputLength={blockStore.getBlockInputLength(b.id)}
           name={(linked || b).name}
           code={linked ? "" : b.code}
-          type={linked !== undefined ? "linked" : "normal"}
+          linked={linked}
+          isAsync={(linked || b).isAsync}
           key={b.id}
           containerRef={c => this.blockElements[b.id] = c} />
       })}

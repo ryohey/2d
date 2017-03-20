@@ -21,7 +21,7 @@ export default {
     {
       name: "popup",
       code: `str => alert(str)`,
-      x: 180 * 3,
+      x: 180 * 5,
       y: 20
     },
     {
@@ -39,7 +39,25 @@ export default {
       link: 4,
       x: 180,
       y: 20
-    }
+    },
+    {
+      name: "delay",
+      code: `(value, delay) => new Promise((resolve, reject) => {\n  setTimeout(() => resolve(value), delay)\n})`,
+      x: 180 * 3,
+      y: 20,
+      isAsync: true
+    },
+    {
+      name: "time",
+      code: "() => 1000",
+      x: 180 * 2,
+      y: 180
+    },
+    {
+      link: 7,
+      x: 180 * 4,
+      y: 20,
+    },
   ],
   edges: [
     {
@@ -64,8 +82,28 @@ export default {
     },
     {
       fromId: 2,
+      toId: 7,
+      toIndex: 0
+    },
+    {
+      fromId: 9,
       toId: 3,
       toIndex: 0
+    },
+    {
+      fromId: 8,
+      toId: 7,
+      toIndex: 1
+    },
+    {
+      fromId: 7,
+      toId: 9,
+      toIndex: 0
+    },
+    {
+      fromId: 8,
+      toId: 9,
+      toIndex: 1
     },
   ]
 }

@@ -70,9 +70,20 @@ export default function buildCode(blocks, edges) {
       if (block.link !== undefined) {
         block = _.find(blocks, { id: block.link })
       }
-      const varName = `out${outputIndex++}`
+      const varName = block.isAsync ?
+        `out${outputIndex}_p` : `out${outputIndex}`
+      outputIndex++
       outputVarNames[id] = varName
-      procs.push(`const ${varName} = ${block.name || `__func${id}`}(${inputs.join(", ")})`)
+      const funcName = block.name || `__func${id}`
+      const promiseInput = _.find(inputs, i => i.endsWith("_p"))
+      if (promiseInput) {
+        const resultName = promiseInput.split("_p")[0]
+        procs.push(`const ${varName} = ${promiseInput}.then(${resultName} =>
+  ${funcName}(${inputs.map(i => i === promiseInput ? resultName : i).join(", ")})
+)`)
+      } else {
+        procs.push(`const ${varName} = ${funcName}(${inputs.join(", ")})`)
+      }
     })
   }
 

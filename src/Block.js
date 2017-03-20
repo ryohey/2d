@@ -26,7 +26,8 @@ function Block({
   x,
   y,
   id,
-  type,
+  linked,
+  isAsync,
   inputLength,
   containerRef,
   onMouseDownHeader,
@@ -43,10 +44,14 @@ function Block({
   openMenu,
   closeMenu,
 }) {
-  const linked = type === "linked"
+  const classes = [
+    "Block",
+    linked && "linked",
+    isAsync && "async"
+  ]
 
   return <div
-    className={`Block ${type}`}
+    className={classes.filter(c => c).join(" ")}
     style={{ left: x, top: y }}
     ref={containerRef}>
     <div
@@ -88,7 +93,6 @@ function Block({
     }
   </div>
 }
-
 
 export default class extends Component {
   constructor(props) {

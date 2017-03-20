@@ -28,6 +28,7 @@ function Block({
   id,
   linked,
   isAsync,
+  isPreview,
   inputLength,
   containerRef,
   onMouseDownHeader,
@@ -47,7 +48,8 @@ function Block({
   const classes = [
     "Block",
     linked && "linked",
-    isAsync && "async"
+    isAsync && "async",
+    isPreview && "preview"
   ]
 
   return <div

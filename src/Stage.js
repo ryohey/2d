@@ -13,7 +13,8 @@ export default class Stage extends Component {
       modalInput: {
         id: 0,
         name: "",
-        code: ""
+        code: "",
+        isAsync: false
       }
     }
   }
@@ -158,7 +159,8 @@ export default class Stage extends Component {
         modalInput: {
           id,
           name: block.name,
-          code: block.code
+          code: block.code,
+          isAsync: block.isAsync
         }
       })
     }
@@ -193,7 +195,8 @@ export default class Stage extends Component {
       blockStore.updateBlock(modalInput.id, b => ({
         ...b,
         name: modalInput.name,
-        code: modalInput.code
+        code: modalInput.code,
+        isAsync: modalInput.isAsync
       }))
     }
 
@@ -250,7 +253,7 @@ export default class Stage extends Component {
           key={b.id}
           containerRef={c => this.blockElements[b.id] = c} />
       })}
-      {previewBlock && <Block key="preview" type="preview" {...previewBlock} />}
+      {previewBlock && <Block key="preview" isPreview={true} {...previewBlock} />}
       <Modal
         contentLabel="edit block"
         isOpen={this.state.modalIsOpen}
@@ -275,6 +278,15 @@ export default class Stage extends Component {
                 ...this.state.modalInput,
                 code: e.target.value
               }})} />
+          </div>
+          <div className="section">
+            <label>async</label>
+            <div><input type="checkbox"
+              checked={this.state.modalInput.isAsync}
+              onChange={e => this.setState({ modalInput: {
+                  ...this.state.modalInput,
+                  isAsync: e.target.checked
+              }})} /></div>
           </div>
           <div className="section footer">
             <button type="button" className="button" onClick={closeModal}>Cancel</button>

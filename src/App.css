@@ -18,6 +18,22 @@ body {
   color: var(--text-color);
 }
 
+textarea, input, button, pre {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  border: none;
+}
+
+textarea, input {
+  background-color: inherit;
+}
+
+input[type="checkbox"] {
+  width: 1.3em;
+  height: 1.3em;
+}
+
 .App {
   height: 100%;
   display: flex;
@@ -39,17 +55,6 @@ body {
   width: 10em;
   background: var(--secondary-background-color);
   border-right: 1px solid var(--divider-color);
-}
-
-textarea, input, button, pre {
-  font-family: inherit;
-  font-size: inherit;
-  color: inherit;
-  border: none;
-}
-
-textarea, input {
-  background-color: inherit;
 }
 
 .Stage {
@@ -118,6 +123,7 @@ textarea, input {
 .BlockModal .section input {
   flex-grow: 1;
   padding: 0.25em 0.7em;
+  background: var(--background-color);
 }
 
 .BlockModal .section textarea {

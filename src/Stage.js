@@ -42,24 +42,34 @@ export default class Stage extends Component {
   }
 
   renderEdges() {
+    const { edges, previewEdge } = this.props.blockStore
     const { canvas } = this
     if (!canvas) {
       return
     }
-
-    const { edges } = this.props.blockStore
     const ctx = canvas.getContext("2d")
+
+    function renderCurve(from, to) {
+      ctx.beginPath()
+      ctx.moveTo(from.x, from.y)
+      const curveLength = Math.abs(to.x - from.x) * 0.3
+      ctx.bezierCurveTo(from.x + curveLength, from.y, to.x - curveLength, to.y, to.x, to.y)
+      ctx.stroke()
+    }
+
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     ctx.lineWidth = 2
     ctx.strokeStyle = "white"
     for (let edge of edges) {
       const from = this.positionOfOutput(edge.fromId)
       const to = this.positionOfInput(edge.toId, edge.toIndex)
-      ctx.beginPath()
-      ctx.moveTo(from.x, from.y)
-      const curveLength = Math.abs(to.x - from.x) * 0.3
-      ctx.bezierCurveTo(from.x + curveLength, from.y, to.x - curveLength, to.y, to.x, to.y)
-      ctx.stroke()
+      renderCurve(from, to)
+    }
+
+    if (previewEdge) {
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.2)"
+      const from = this.positionOfOutput(previewEdge.fromId)
+      renderCurve(from, previewEdge.toPosition)
     }
   }
 
@@ -70,6 +80,7 @@ export default class Stage extends Component {
     const onMouseUpStage = (e, id) => {
       this.click = null
       blockStore.previewBlock = null
+      blockStore.previewEdge = null
     }
 
     const onDoubleClickStage = e => {
@@ -100,17 +111,30 @@ export default class Stage extends Component {
         return
       }
 
-      if (click.type === "block") {
-        const delta = {
-          x: e.clientX - click.startOffset.x,
-          y: e.clientY - click.startOffset.y,
-        }
+      switch (click.type) {
+        case "block": {
+          const delta = {
+            x: e.clientX - click.startOffset.x,
+            y: e.clientY - click.startOffset.y,
+          }
 
-        blockStore.updateBlock(click.id, b => ({
-          ...b,
-          x: click.start.x + delta.x,
-          y: click.start.y + delta.y
-        }))
+          blockStore.updateBlock(click.id, b => ({
+            ...b,
+            x: click.start.x + delta.x,
+            y: click.start.y + delta.y
+          }))
+          break
+        }
+        case "edge": {
+          const bounds = e.currentTarget.getBoundingClientRect()
+          blockStore.previewEdge = {
+            fromId: click.id,
+            toPosition: {
+              x: e.clientX - bounds.left,
+              y: e.clientY - bounds.top,
+            }
+          }
+        }
       }
     }
 

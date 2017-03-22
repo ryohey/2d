@@ -6,6 +6,17 @@ export default class BlockStore { constructor() { extendObservable(this, {
   edges: [],
   previewBlock: null,
 
+  /**
+    {
+      fromId: 0,
+      toPosition: {
+        x: 300,
+        y: 200
+      }
+    }
+  */
+  previewEdge: null,
+
   getBlock(id) {
     return this.blocks.filter(b => b.id === id)[0]
   },

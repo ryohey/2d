@@ -261,8 +261,7 @@ export default class Stage extends Component {
       className="Stage"
       ref={c => this.container = c}>
       <canvas ref={c => this.canvas = c} />
-      {blockStore.blocks.map(b => {
-        const linked = _.find(blockStore.blocks, { id: b.link })
+      {blockStore.allDisplayBlocks().map(b => {
         return <Block
           onMouseDownHeader={onMouseDownBlockHeader}
           onDoubleClickHeader={onDoubleClickBlockHeader}
@@ -275,11 +274,11 @@ export default class Stage extends Component {
           onClickRemove={onClickBlockRemove}
           onClickMakeReference={onClickBlockMakeReference}
           {...b}
-          inputLength={blockStore.getBlockInputLength(b.id)}
-          name={(linked || b).name}
-          code={linked ? "" : b.code}
-          linked={linked}
-          isAsync={(linked || b).isAsync}
+          inputLength={b.inputLength}
+          name={b.name}
+          code={b.code}
+          linked={b.linked}
+          isAsync={b.isAsync}
           key={b.id}
           containerRef={c => this.blockElements[b.id] = c} />
       })}

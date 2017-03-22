@@ -21,6 +21,28 @@ export default class BlockStore { constructor() { extendObservable(this, {
     return this.blocks.filter(b => b.id === id)[0]
   },
 
+  /**
+   表示用の block オブジェクトを取得する
+   inputLength など表示に必要なプロパティが追加されている
+   link 先を取得しなくても表示できるように name プロパティなども追加する
+   */
+  getDisplayBlock(id) {
+    const block = this.getBlock(id)
+    const linked = this.getBlock(block.link)
+    return {
+      ...block,
+      linked: block.link !== undefined,
+      name: (linked || block).name,
+      isAsync: (linked || block).isAsync,
+      code: linked ? "" : block.code,
+      inputLength: this.getBlockInputLength(id)
+    }
+  },
+
+  allDisplayBlocks() {
+    return this.blocks.map(b => this.getDisplayBlock(b.id))
+  },
+
   addBlock: action(block => {
     this.blocks = [...this.blocks, {
       ...block,

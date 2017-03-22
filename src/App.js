@@ -3,12 +3,14 @@ import { observer } from "mobx-react"
 import Icon from "./Icon"
 import _Stage from "./Stage"
 import BlockStore from "./BlockStore"
+import CodeStore from "./CodeStore"
 import buildCode from "./helpers/buildCode"
 import exampleBlocks from "./helpers/exampleBlocks"
 
 import "./App.css"
 
 const blockStore = new BlockStore()
+const codeStore = new CodeStore()
 
 exampleBlocks.blocks.forEach(b => blockStore.addBlock(b))
 blockStore.edges = exampleBlocks.edges
@@ -53,7 +55,7 @@ class App extends Component {
           </div>
         </div>
         <div className="content">
-          <Stage blockStore={blockStore} />
+          <Stage blockStore={blockStore} codeStore={codeStore} />
           <CodeOutput blockStore={blockStore} />
         </div>
       </div>

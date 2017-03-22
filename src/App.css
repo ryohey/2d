@@ -51,12 +51,6 @@ input[type="checkbox"] {
   flex-direction: column;
 }
 
-.ToolBox {
-  width: 10em;
-  background: var(--secondary-background-color);
-  border-right: 1px solid var(--divider-color);
-}
-
 .Stage {
   flex-grow: 1;
   position: relative;
@@ -71,7 +65,7 @@ input[type="checkbox"] {
 
 .Toolbar {
   background: var(--secondary-background-color);
-  border-bottom: 1px solid var(--background-color);
+  border-bottom: 2px solid var(--divider-color);
   padding: 1em;
 }
 
@@ -79,6 +73,7 @@ input[type="checkbox"] {
   font-size: 110%;
   padding: 0em 0.5em;
   background: var(--background-color);
+  margin-right: 1em;
 }
 
 .ToolbarButton:hover {
@@ -160,7 +155,7 @@ input[type="checkbox"] {
 
 .CodeOutput {
   min-height: 6em;
-  max-height: 10em;
+  max-height: 30%;
   background: var(--secondary-background-color);
   border-top: 1px solid var(--divider-color);
   font-size: 90%;
@@ -168,16 +163,35 @@ input[type="checkbox"] {
   overflow-y: auto;
 }
 
+
 .ToolBox {
+  width: 10em;
+  background: var(--secondary-background-color);
+  border-right: 1px solid var(--divider-color);
+  flex-direction: column;
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
+}
+
+.ToolBox .header {
+  background: var(--background-color);
+  padding: 0.2em 1em;
+  border-bottom: 1px solid var(--divider-color);
+  text-transform: uppercase;
 }
 
 .ToolBox .item {
   padding: 1em;
-  width: 100%;
   border-bottom: 1px solid var(--divider-color);
   user-select: none;
+  cursor: default;
+  display: flex;
 }
 
-.ToolBox {}
+.ToolBox .item:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ToolBox .name {
+  flex-grow: 1;
+}

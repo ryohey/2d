@@ -4,14 +4,24 @@ import _ from "lodash"
 export default class BlockStore { constructor() { extendObservable(this, {
   blocks: [],
   edges: [],
+
+  /**
+    {
+      x: Number,
+      y: Number,
+      inputLength: Number,
+      name: String,
+      code: String
+    }
+   */
   previewBlock: null,
 
   /**
     {
-      fromId: 0,
+      fromId: Number,
       toPosition: {
-        x: 300,
-        y: 200
+        x: Number,
+        y: Number
       }
     }
   */

@@ -6,6 +6,7 @@ import BlockStore from "./BlockStore"
 import CodeStore from "./CodeStore"
 import buildCode from "./helpers/buildCode"
 import exampleBlocks from "./helpers/exampleBlocks"
+import exampleCodes from "./helpers/exampleCodes"
 
 import "./App.css"
 
@@ -14,6 +15,7 @@ const codeStore = new CodeStore()
 
 exampleBlocks.blocks.forEach(b => blockStore.addBlock(b))
 blockStore.edges = exampleBlocks.edges
+codeStore.codes = exampleCodes()
 
 function _CodeOutput({ blockStore }) {
   const code = buildCode(blockStore.blocks, blockStore.edges)
@@ -32,27 +34,38 @@ class App extends Component {
       eval(code)
     }
 
+    const onClickClear = () => {
+      blockStore.edges = []
+      blockStore.blocks = []
+    }
+
     return <div className="App">
       <div className="Toolbar">
         <a className="ToolbarButton" onClick={onClickPlay}>
           <Icon name="play" />
         </a>
+        <a className="ToolbarButton" onClick={onClickClear}>
+          <Icon name="delete" />
+        </a>
       </div>
       <div className="main">
         <div className="ToolBox">
-          <div className="item" onMouseDown={e => {
-            e.stopPropagation()
-            const bounds = e.target.getBoundingClientRect()
-            blockStore.previewBlock = {
-              x: e.clientX - bounds.width,
-              y: e.clientY - bounds.top,
-              inputLength: 1,
-              name: "func",
-              code: ""
-            }
-          }}>
-            <div className="name">Script</div>
-          </div>
+          <div className="header">toolbox</div>
+          {codeStore.codes.map((c, i) =>
+            <div key={i} className="item" onMouseDown={e => {
+              e.stopPropagation()
+              const bounds = e.currentTarget.parentElement.getBoundingClientRect()
+              blockStore.previewBlock = {
+                ...c,
+                x: e.clientX - bounds.width,
+                y: e.clientY - bounds.top,
+                inputLength: c.inputLength,
+              }
+            }}>
+              <div className="name">{c.name}</div>
+              <Icon name="arrow-top-right" />
+            </div>
+          )}
         </div>
         <div className="content">
           <Stage blockStore={blockStore} codeStore={codeStore} />

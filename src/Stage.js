@@ -79,15 +79,19 @@ export default class Stage extends Component {
 
     const onMouseUpStage = (e, id) => {
       this.click = null
-      blockStore.previewBlock = null
       blockStore.previewEdge = null
+
+      const { previewBlock } = blockStore
+      if (previewBlock) {
+        blockStore.previewBlock = null
+        blockStore.addBlock(previewBlock)
+      }
     }
 
     const onDoubleClickStage = e => {
       this.click = null
       const bounds = e.currentTarget.getBoundingClientRect()
       blockStore.addBlock({
-        id: blockStore.lastBlockId() + 1,
         x: e.clientX - bounds.left,
         y: e.clientY - bounds.top,
         name: "func",

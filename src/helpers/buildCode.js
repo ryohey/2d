@@ -8,9 +8,18 @@ function wrapPromiseAll(values) {
 }
 
 export default function buildCode(blocks, edges) {
+  function getFuncVarName(block) {
+    const f = block.name ? `${block.name}` : `func${block.id}`
+    if (window[f] !== undefined) {
+      // グローバルな関数と名前が被らないようにする
+      return `__${f}`
+    }
+    return f
+  }
+
   const func = blocks
     .filter(b => b.code)
-    .map(b => `const ${b.name} = ${b.code}`)
+    .map(b => `const ${getFuncVarName(b)} = ${b.code}`)
     .join("\n")
 
   let outputIndex = 0
@@ -90,7 +99,7 @@ export default function buildCode(blocks, edges) {
       const varName = isAsync ? `out${outputIndex}_p` : `out${outputIndex}`
       outputIndex++
       outputVarNames[id] = varName
-      const funcName = block.name || `__func${id}`
+      const funcName = getFuncVarName(block)
       if (promiseInputs.length > 0) {
         const resultNames = promiseInputs.map(i => i.split("_p")[0])
         const promise = wrapPromiseAll(promiseInputs)

@@ -1,23 +1,27 @@
+# 2d
+
+The graphical interface for the Flow-Based Programming.
+
+![screenshot](https://user-images.githubusercontent.com/5355966/42815189-acbce400-8a01-11e8-8f87-205d70d41f39.png)
+
 ## Graph to Script
 
-- グラフ、ソースコードの相互変換
-- グラフ上の位置などはソースコードにコメントとして埋め込む `未実装`
+- Translate a graph into a script in real time.
+- Translate a script into a graph `unimplemented`
 
-## 機能
+## Features
 
-- 関数ブロックの作成
-- 関数ブロック同士の接続
-- プログラム実行
-- ソースコード変換
-- Promise 対応
-- 参照ブロックの作成
-- 可変長引数 `未実装`
-- グラフ変換 `未実装`
-- デフォルト引数 `未実装`
-- クラス (第一引数のデフォルト引数が this になった関数ブロック群) `未実装`
-- 接続された複数の関数ブロックをひとつの関数ブロックとして定義 `未実装`
-- 型チェック `未実装`
-- 引数名の表示 `未実装`
-- ブロック候補の表示 `未実装`
-- ブロック候補のインクリメンタルサーチ `未実装`
-- ブロックの整列 `未実装`
+- Create function blocks
+- Connect blocks
+- Run program
+- Script translation
+- Promise
+- Create reference blocks
+- Variable arguments `unimplemented`
+- Default parameter `unimplemented`
+- Class `unimplemented`
+- Function block composition `unimplemented`
+- Type checking `unimplemented`
+- Show parameter name `unimplemented`
+- Incremental search for blocks `unimplemented`
+- Align block layout `unimplemented`

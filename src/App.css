@@ -18,14 +18,18 @@ body {
   color: var(--text-color);
 }
 
-textarea, input, button, pre {
+textarea,
+input,
+button,
+pre {
   font-family: inherit;
   font-size: inherit;
   color: inherit;
   border: none;
 }
 
-textarea, input {
+textarea,
+input {
   background-color: inherit;
 }
 
@@ -40,12 +44,12 @@ input[type="checkbox"] {
   flex-direction: column;
 }
 
-.App>.main {
+.App > .main {
   display: flex;
   height: 100%;
 }
 
-.App>.main>.content {
+.App > .main > .content {
   display: flex;
   flex-grow: 1;
   flex-direction: column;
@@ -162,7 +166,6 @@ input[type="checkbox"] {
   padding: 1em;
   overflow-y: auto;
 }
-
 
 .ToolBox {
   width: 10em;

@@ -1,4 +1,5 @@
 import _ from "lodash"
+import { IBlock, IEdge } from "../types"
 
 function wrapPromiseAll(values) {
   if (values.length === 1) {
@@ -7,7 +8,7 @@ function wrapPromiseAll(values) {
   return `Promise.all([${values.join(", ")}])`
 }
 
-export default function buildCode(blocks, edges) {
+export default function buildCode(blocks: IBlock[], edges: IEdge[]) {
   function getFuncVarName(block) {
     const f = block.name ? `${block.name}` : `func${block.id}`
     if (window[f] !== undefined) {
@@ -23,7 +24,7 @@ export default function buildCode(blocks, edges) {
     .join("\n")
 
   let outputIndex = 0
-  let procs = []
+  let procs: string[] = []
 
   // { block id : 出力変数名 }
   const outputVarNames = _.fromPairs(blocks.map(b => [b.id, null]))
@@ -33,48 +34,58 @@ export default function buildCode(blocks, edges) {
   */
   while (true) {
     // 出力が未計算で入力が揃っている（もしくは無い）ものを探す
-    const terminals = _.entries(outputVarNames).map(e => {
-      const id = parseInt(e[0])
-      const computed = e[1] !== null
-      if (computed) {
-        // 出力が計算済み
-        return null
-      }
+    const terminals: any[] = _.entries(outputVarNames)
+      .map(e => {
+        const id = parseInt(e[0])
+        const computed = e[1] !== null
+        if (computed) {
+          // 出力が計算済み
+          return null
+        }
 
-      let block = _.find(blocks, { id })
-      if (block.link !== undefined) {
-        block = _.find(blocks, { id: block.link })
-      }
+        let block: IBlock | undefined = _.find(blocks, b => b.id === id)
+        if (block && block.link !== undefined) {
+          block = _.find(blocks, { id: block.link })
+        }
 
-      // TODO: Components.utils.Sandbox を使う
-      const func = eval(`() => { return ${block.code} }`)()
-      const noInput = func.length === 0
-      if (noInput) {
-        // 入力が無い
+        if (block === undefined) {
+          return null
+        }
+
+        // TODO: Components.utils.Sandbox を使う
+        const func = eval(`() => { return ${block.code} }`)()
+        const noInput = func.length === 0
+        if (noInput) {
+          // 入力が無い
+          return {
+            id,
+            inputs: []
+          }
+        }
+
+        const inputs = _.range(func.length).map(i => {
+          const edge = _.find(edges, e => e.toId === id && e.toIndex === i)
+          if (edge) {
+            return edge.fromId
+          }
+          return null
+        })
+        const inputVarNames = inputs.map(
+          i => (i !== null ? outputVarNames[i] : "undefined")
+        )
+        const allInputComputed = _.every(inputVarNames, n => n !== null)
+
+        if (!allInputComputed) {
+          // 入力が揃っていない
+          return null
+        }
+
         return {
-          id, inputs: []
+          id,
+          inputs: inputVarNames
         }
-      }
-
-      const inputs = _.range(func.length).map(i => {
-        const edge = _.find(edges, { toId: id, toIndex: i })
-        if (edge) {
-          return edge.fromId
-        }
-        return null
       })
-      const inputVarNames = inputs.map(i => i !== null ? outputVarNames[i] : "undefined")
-      const allInputComputed = _.every(inputVarNames, n => n !== null)
-
-      if (!allInputComputed) {
-        // 入力が揃っていない
-        return null
-      }
-
-      return {
-        id, inputs: inputVarNames
-      }
-    }).filter(t => t)
+      .filter(t => t)
 
     if (terminals.length === 0) {
       break
@@ -90,9 +101,12 @@ export default function buildCode(blocks, edges) {
     */
     terminals.forEach(t => {
       const { id, inputs } = t
-      let block = _.find(blocks, { id })
-      if (block.link !== undefined) {
+      let block: IBlock | undefined = _.find(blocks, b => b.id === id)
+      if (block && block.link !== undefined) {
         block = _.find(blocks, { id: block.link })
+      }
+      if (block === undefined) {
+        return
       }
       const promiseInputs = inputs.filter(i => i.endsWith("_p"))
       const isAsync = block.isAsync || promiseInputs.length > 0
@@ -104,7 +118,10 @@ export default function buildCode(blocks, edges) {
         const resultNames = promiseInputs.map(i => i.split("_p")[0])
         const promise = wrapPromiseAll(promiseInputs)
         const params = inputs.map(i => i.split("_p")[0]).join(", ") // _p を除去する
-        const result = resultNames.length === 1 ? `${resultNames}` : `([${resultNames.join(", ")}])`
+        const result =
+          resultNames.length === 1
+            ? `${resultNames}`
+            : `([${resultNames.join(", ")}])`
         procs.push(`const ${varName} = ${promise}.then(${result} =>
   ${funcName}(${params})
 )`)

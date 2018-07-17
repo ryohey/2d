@@ -1,26 +1,39 @@
 import React, { Component } from "react"
-import _ from "lodash"
 import Modal from "react-modal"
 import Block from "./Block"
+import { BlockId, IPoint } from "./types"
 
-export default class Stage extends Component {
-  constructor(props) {
-    super(props)
+interface ClickData {
+  type: string
+  id: BlockId
+  start?: IPoint
+  startOffset?: IPoint
+}
 
-    this.blockElements = []
+export default class Stage extends Component<any, any> {
+  blockElements: { [id: number]: HTMLElement | undefined } = {}
 
-    this.state = {
-      modalInput: {
-        id: 0,
-        name: "",
-        code: "",
-        isAsync: false
-      }
+  state: any = {
+    modalInput: {
+      id: 0,
+      name: "",
+      code: "",
+      isAsync: false
     }
   }
 
+  canvas: HTMLCanvasElement | null
+  container: HTMLElement | null
+  click: ClickData | null
+
   positionOfInput(id, index) {
     const block = this.blockElements[id]
+    if (block === undefined) {
+      return {
+        x: 0,
+        y: 0
+      }
+    }
     return {
       x: block.offsetLeft,
       y: block.offsetTop + 54 + 20 * index
@@ -29,6 +42,12 @@ export default class Stage extends Component {
 
   positionOfOutput(id) {
     const block = this.blockElements[id]
+    if (block === undefined) {
+      return {
+        x: 0,
+        y: 0
+      }
+    }
     return {
       x: block.offsetLeft + block.clientWidth,
       y: block.offsetTop + 54
@@ -36,6 +55,9 @@ export default class Stage extends Component {
   }
 
   componentDidMount() {
+    if (this.canvas === null || this.container === null) {
+      return
+    }
     this.canvas.width = this.container.clientWidth
     this.canvas.height = this.container.clientHeight
     this.renderEdges()
@@ -49,11 +71,22 @@ export default class Stage extends Component {
     }
     const ctx = canvas.getContext("2d")
 
-    function renderCurve(from, to) {
+    if (ctx === null) {
+      return
+    }
+
+    const renderCurve = (from, to) => {
       ctx.beginPath()
       ctx.moveTo(from.x, from.y)
       const curveLength = Math.abs(to.x - from.x) * 0.3
-      ctx.bezierCurveTo(from.x + curveLength, from.y, to.x - curveLength, to.y, to.x, to.y)
+      ctx.bezierCurveTo(
+        from.x + curveLength,
+        from.y,
+        to.x - curveLength,
+        to.y,
+        to.x,
+        to.y
+      )
       ctx.stroke()
     }
 
@@ -77,7 +110,7 @@ export default class Stage extends Component {
     const { blockStore } = this.props
     const { previewBlock } = blockStore
 
-    const onMouseUpStage = (e, id) => {
+    const onMouseUpStage = () => {
       this.click = null
       blockStore.previewEdge = null
 
@@ -99,13 +132,13 @@ export default class Stage extends Component {
       })
     }
 
-    const onMouseMoveStage = (e, id) => {
+    const onMouseMoveStage = (e: any) => {
       if (blockStore.previewBlock) {
         const bounds = e.currentTarget.getBoundingClientRect()
         blockStore.previewBlock = {
           ...blockStore.previewBlock,
           x: e.clientX - bounds.left,
-          y: e.clientY - bounds.top,
+          y: e.clientY - bounds.top
         }
         return
       }
@@ -117,15 +150,22 @@ export default class Stage extends Component {
 
       switch (click.type) {
         case "block": {
+          if (this.click === null) {
+            break
+          }
+          const { startOffset, start } = this.click
+          if (startOffset === undefined || start === undefined) {
+            break
+          }
           const delta = {
-            x: e.clientX - click.startOffset.x,
-            y: e.clientY - click.startOffset.y,
+            x: e.clientX - startOffset.x,
+            y: e.clientY - startOffset.y
           }
 
           blockStore.updateBlock(click.id, b => ({
             ...b,
-            x: click.start.x + delta.x,
-            y: click.start.y + delta.y
+            x: start.x + delta.x,
+            y: start.y + delta.y
           }))
           break
         }
@@ -135,7 +175,7 @@ export default class Stage extends Component {
             fromId: click.id,
             toPosition: {
               x: e.clientX - bounds.left,
-              y: e.clientY - bounds.top,
+              y: e.clientY - bounds.top
             }
           }
         }
@@ -158,7 +198,7 @@ export default class Stage extends Component {
       }
     }
 
-    const openModalWithBlock = (id) => {
+    const openModalWithBlock = id => {
       let block = blockStore.getBlock(id)
       block = block.link ? blockStore.getBlock(block.link) : block
       this.setState({
@@ -178,8 +218,7 @@ export default class Stage extends Component {
       openModalWithBlock(id)
     }
 
-    const onMouseDownBlockInput = (e, id, index) => {
-    }
+    const onMouseDownBlockInput = (e, id, index) => {}
 
     const onMouseUpBlockInput = (e, id, i) => {
       const { click } = this
@@ -258,75 +297,107 @@ export default class Stage extends Component {
 
     this.renderEdges()
 
-    return <div
-      onDoubleClick={onDoubleClickStage}
-      onMouseUp={onMouseUpStage}
-      onMouseMove={onMouseMoveStage}
-      className="Stage"
-      ref={c => this.container = c}>
-      <canvas ref={c => this.canvas = c} />
-      {blockStore.allDisplayBlocks().map(b => {
-        return <Block
-          onMouseDownHeader={onMouseDownBlockHeader}
-          onDoubleClickHeader={onDoubleClickBlockHeader}
-          onMouseDownInput={onMouseDownBlockInput}
-          onMouseUpInput={onMouseUpBlockInput}
-          onMouseDownOutput={onMouseDownBlockOutput}
-          onMouseUpOutput={onMouseUpBlockOutput}
-          onDoubleClickBody={onDoubleClickBlockBody}
-          onClickDupulicate={onClickBlockDupulicate}
-          onClickRemove={onClickBlockRemove}
-          onClickMakeReference={onClickBlockMakeReference}
-          {...b}
-          inputLength={b.inputLength}
-          name={b.name}
-          code={b.code}
-          linked={b.linked}
-          isAsync={b.isAsync}
-          key={b.id}
-          containerRef={c => this.blockElements[b.id] = c} />
-      })}
-      {previewBlock && <Block key="preview" isPreview={true} {...previewBlock} />}
-      <Modal
-        contentLabel="edit block"
-        isOpen={this.state.modalIsOpen}
-        onRequestClose={closeModal}
-        overlayClassName="BlockModalOverlay"
-        className="BlockModal">
-        <form onSubmit={onClickModalOK}>
-          <div className="section">
-            <label>name</label>
-            <input type="text"
-              value={this.state.modalInput.name}
-              onChange={e => this.setState({ modalInput: {
-                ...this.state.modalInput,
-                name: e.target.value
-              }})} />
-          </div>
-          <div className="section">
-            <label>code</label>
-            <textarea
-              value={this.state.modalInput.code}
-              onChange={e => this.setState({ modalInput: {
-                ...this.state.modalInput,
-                code: e.target.value
-              }})} />
-          </div>
-          <div className="section">
-            <label>async</label>
-            <div><input type="checkbox"
-              checked={this.state.modalInput.isAsync}
-              onChange={e => this.setState({ modalInput: {
-                  ...this.state.modalInput,
-                  isAsync: e.target.checked
-              }})} /></div>
-          </div>
-          <div className="section footer">
-            <button type="button" className="button" onClick={closeModal}>Cancel</button>
-            <button type="submit" className="button primary">OK</button>
-          </div>
-        </form>
-      </Modal>
-    </div>
+    return (
+      <div
+        onDoubleClick={onDoubleClickStage}
+        onMouseUp={onMouseUpStage}
+        onMouseMove={onMouseMoveStage}
+        className="Stage"
+        ref={c => (this.container = c)}
+      >
+        <canvas ref={c => (this.canvas = c)} />
+        {blockStore.allDisplayBlocks().map(b => {
+          return (
+            <Block
+              onMouseDownHeader={onMouseDownBlockHeader}
+              onDoubleClickHeader={onDoubleClickBlockHeader}
+              onMouseDownInput={onMouseDownBlockInput}
+              onMouseUpInput={onMouseUpBlockInput}
+              onMouseDownOutput={onMouseDownBlockOutput}
+              onMouseUpOutput={onMouseUpBlockOutput}
+              onDoubleClickBody={onDoubleClickBlockBody}
+              onClickDupulicate={onClickBlockDupulicate}
+              onClickRemove={onClickBlockRemove}
+              onClickMakeReference={onClickBlockMakeReference}
+              {...b}
+              inputLength={b.inputLength}
+              name={b.name}
+              code={b.code}
+              linked={b.linked}
+              isAsync={b.isAsync}
+              key={b.id}
+              containerRef={c => (this.blockElements[b.id] = c)}
+            />
+          )
+        })}
+        {previewBlock && (
+          <Block key="preview" isPreview={true} {...previewBlock} />
+        )}
+        <Modal
+          contentLabel="edit block"
+          isOpen={this.state.modalIsOpen}
+          onRequestClose={closeModal}
+          overlayClassName="BlockModalOverlay"
+          className="BlockModal"
+        >
+          <form onSubmit={onClickModalOK}>
+            <div className="section">
+              <label>name</label>
+              <input
+                type="text"
+                value={this.state.modalInput.name}
+                onChange={e =>
+                  this.setState({
+                    modalInput: {
+                      ...this.state.modalInput,
+                      name: e.target.value
+                    }
+                  })
+                }
+              />
+            </div>
+            <div className="section">
+              <label>code</label>
+              <textarea
+                value={this.state.modalInput.code}
+                onChange={e =>
+                  this.setState({
+                    modalInput: {
+                      ...this.state.modalInput,
+                      code: e.target.value
+                    }
+                  })
+                }
+              />
+            </div>
+            <div className="section">
+              <label>async</label>
+              <div>
+                <input
+                  type="checkbox"
+                  checked={this.state.modalInput.isAsync}
+                  onChange={e =>
+                    this.setState({
+                      modalInput: {
+                        ...this.state.modalInput,
+                        isAsync: e.target.checked
+                      }
+                    })
+                  }
+                />
+              </div>
+            </div>
+            <div className="section footer">
+              <button type="button" className="button" onClick={closeModal}>
+                Cancel
+              </button>
+              <button type="submit" className="button primary">
+                OK
+              </button>
+            </div>
+          </form>
+        </Modal>
+      </div>
+    )
   }
 }

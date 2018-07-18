@@ -24,7 +24,10 @@ export interface IEdge {
   fromId: BlockId
   toId: BlockId
   toIndex: number
-  toPosition?: IPoint
+}
+
+export type PreviewEdge = Pick<IEdge, "fromId"> & {
+  toPosition: IPoint
 }
 
 export interface IGraph {

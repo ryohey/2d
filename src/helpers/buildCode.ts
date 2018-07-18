@@ -1,15 +1,22 @@
 import _ from "lodash"
-import { IBlock, IEdge } from "../types"
+import { IBlock, IEdge, BlockId } from "../types"
+import { notEmpty } from "./typeHelper"
 
-function wrapPromiseAll(values) {
+function wrapPromiseAll(values: string[]) {
   if (values.length === 1) {
     return `${values[0]}`
   }
   return `Promise.all([${values.join(", ")}])`
 }
 
+// 出力が未計算で入力が揃っている（もしくは無い）もの
+interface Calculatable {
+  id: BlockId
+  inputs: string[]
+}
+
 export default function buildCode(blocks: IBlock[], edges: IEdge[]) {
-  function getFuncVarName(block) {
+  function getFuncVarName(block: IBlock) {
     const f = block.name ? `${block.name}` : `func${block.id}`
     if (window[f] !== undefined) {
       // グローバルな関数と名前が被らないようにする
@@ -27,14 +34,16 @@ export default function buildCode(blocks: IBlock[], edges: IEdge[]) {
   let procs: string[] = []
 
   // { block id : 出力変数名 }
-  const outputVarNames = _.fromPairs(blocks.map(b => [b.id, null]))
+  const outputVarNames: { [index: number]: string | null } = _.fromPairs(
+    blocks.map(b => [b.id, null])
+  )
   /**
     末端からグラフを走査してソースコードを生成する
     入力が揃っているノードの出力変数の名前を作っていく
   */
   while (true) {
     // 出力が未計算で入力が揃っている（もしくは無い）ものを探す
-    const terminals: any[] = _.entries(outputVarNames)
+    const terminals: Calculatable[] = _.entries(outputVarNames)
       .map(e => {
         const id = parseInt(e[0])
         const computed = e[1] !== null
@@ -82,10 +91,10 @@ export default function buildCode(blocks: IBlock[], edges: IEdge[]) {
 
         return {
           id,
-          inputs: inputVarNames
+          inputs: inputVarNames.filter(notEmpty)
         }
       })
-      .filter(t => t)
+      .filter(notEmpty)
 
     if (terminals.length === 0) {
       break

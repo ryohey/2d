@@ -1,13 +1,14 @@
-import { action, observable, computed } from "mobx"
+import { action, observable } from "mobx"
 import _ from "lodash"
-import { IEdge, IBlock, BlockId, DisplayBlock } from "./types"
+import { IEdge, IBlock, BlockId, DisplayBlock, PreviewEdge } from "./types"
+import { Optional } from "./helpers/typeHelper"
 
 export default class BlockStore {
   @observable blocks: IBlock[] = []
   @observable edges: IEdge[] = []
 
-  @observable previewBlock: IBlock | null = null
-  @observable previewEdge: IEdge | null = null
+  @observable previewBlock: DisplayBlock | null = null
+  @observable previewEdge: PreviewEdge | null = null
 
   getBlock(id: BlockId): IBlock {
     return this.blocks.filter(b => b.id === id)[0]
@@ -31,18 +32,18 @@ export default class BlockStore {
     }
   }
 
-  allDisplayBlocks(): IBlock[] {
+  allDisplayBlocks(): DisplayBlock[] {
     return this.blocks.map(b => this.getDisplayBlock(b.id))
   }
 
   @action
-  addBlock(block: IBlock) {
+  addBlock(block: Optional<IBlock, "id">) {
     this.blocks = [
       ...this.blocks,
       {
         ...block,
         id: this.lastBlockId() + 1,
-        name: this.getPreferredBlockName(block.name)
+        name: this.getUniqueBlockName(block.name)
       }
     ]
   }
@@ -57,7 +58,7 @@ export default class BlockStore {
     return func.length
   }
 
-  getPreferredBlockName(requiredName) {
+  getUniqueBlockName(requiredName: string = "") {
     let name = requiredName
     let count = 2
     while (_.find(this.blocks, { name })) {

@@ -17,7 +17,7 @@ exampleBlocks.blocks.forEach(b => blockStore.addBlock(b))
 blockStore.edges = exampleBlocks.edges
 codeStore.codes = exampleCodes()
 
-function _CodeOutput({ blockStore }) {
+function _CodeOutput({ blockStore }: { blockStore: BlockStore }) {
   const code = buildCode(blockStore.blocks, blockStore.edges)
   return (
     <div className="CodeOutput">
@@ -79,7 +79,7 @@ class App extends Component {
             ))}
           </div>
           <div className="content">
-            <Stage blockStore={blockStore} codeStore={codeStore} />
+            <Stage blockStore={blockStore} />
             <CodeOutput blockStore={blockStore} />
           </div>
         </div>

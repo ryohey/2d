@@ -1,7 +1,7 @@
 import React, { SFC } from "react"
 
-import f from "./helpers/flatJoin"
 import e from "./helpers/getElementType"
+import classnames from "classnames"
 
 import "./Icon.css"
 import "mdi/css/materialdesignicons.css"
@@ -14,7 +14,11 @@ export interface IconProps {
 
 const Icon: SFC<IconProps> = ({ component, name, className }) => {
   const ElementType = e(component)
-  return <ElementType className={f("Icon", "mdi", `mdi-${name}`, className)} />
+  return (
+    <ElementType
+      className={classnames("Icon", "mdi", `mdi-${name}`, className)}
+    />
+  )
 }
 
 export default Icon

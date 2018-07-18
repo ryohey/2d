@@ -1,7 +1,8 @@
-import React, { Component } from "react"
+import React, { Component, FormEvent, MouseEvent } from "react"
 import Modal from "react-modal"
 import Block from "./Block"
-import { BlockId, IPoint } from "./types"
+import { BlockId, IPoint, IBlock } from "./types"
+import BlockStore from "./BlockStore"
 
 interface ClickData {
   type: string
@@ -10,10 +11,22 @@ interface ClickData {
   startOffset?: IPoint
 }
 
-export default class Stage extends Component<any, any> {
+export interface StageProps {
+  blockStore: BlockStore
+}
+
+export interface StageState {
+  modalIsOpen: boolean
+  modalInput: ModalInput
+}
+
+type ModalInput = Pick<IBlock, "id" | "name" | "code" | "isAsync">
+
+export default class Stage extends Component<StageProps, StageState> {
   blockElements: { [id: number]: HTMLElement | undefined } = {}
 
-  state: any = {
+  state = {
+    modalIsOpen: false,
     modalInput: {
       id: 0,
       name: "",
@@ -26,7 +39,7 @@ export default class Stage extends Component<any, any> {
   container: HTMLElement | null
   click: ClickData | null
 
-  positionOfInput(id, index) {
+  positionOfInput(id: BlockId, index: number) {
     const block = this.blockElements[id]
     if (block === undefined) {
       return {
@@ -40,7 +53,7 @@ export default class Stage extends Component<any, any> {
     }
   }
 
-  positionOfOutput(id) {
+  positionOfOutput(id: BlockId) {
     const block = this.blockElements[id]
     if (block === undefined) {
       return {
@@ -75,7 +88,7 @@ export default class Stage extends Component<any, any> {
       return
     }
 
-    const renderCurve = (from, to) => {
+    const renderCurve = (from: IPoint, to: IPoint) => {
       ctx.beginPath()
       ctx.moveTo(from.x, from.y)
       const curveLength = Math.abs(to.x - from.x) * 0.3
@@ -121,7 +134,7 @@ export default class Stage extends Component<any, any> {
       }
     }
 
-    const onDoubleClickStage = e => {
+    const onDoubleClickStage = (e: MouseEvent<any>) => {
       this.click = null
       const bounds = e.currentTarget.getBoundingClientRect()
       blockStore.addBlock({
@@ -132,7 +145,7 @@ export default class Stage extends Component<any, any> {
       })
     }
 
-    const onMouseMoveStage = (e: any) => {
+    const onMouseMoveStage = (e: MouseEvent<any>) => {
       if (blockStore.previewBlock) {
         const bounds = e.currentTarget.getBoundingClientRect()
         blockStore.previewBlock = {
@@ -182,7 +195,7 @@ export default class Stage extends Component<any, any> {
       }
     }
 
-    const onMouseDownBlockHeader = (e, id) => {
+    const onMouseDownBlockHeader = (e: MouseEvent<any>, id: BlockId) => {
       const block = blockStore.getBlock(id)
       this.click = {
         type: "block",
@@ -198,7 +211,7 @@ export default class Stage extends Component<any, any> {
       }
     }
 
-    const openModalWithBlock = id => {
+    const openModalWithBlock = (id: BlockId) => {
       let block = blockStore.getBlock(id)
       block = block.link ? blockStore.getBlock(block.link) : block
       this.setState({
@@ -212,15 +225,22 @@ export default class Stage extends Component<any, any> {
       })
     }
 
-    const onDoubleClickBlockHeader = (e, id) => {
+    const onDoubleClickBlockHeader = (e: MouseEvent<any>, id: BlockId) => {
       this.click = null
-      e.stopPropagation()
       openModalWithBlock(id)
     }
 
-    const onMouseDownBlockInput = (e, id, index) => {}
+    const onMouseDownBlockInput = (
+      e: MouseEvent<any>,
+      id: BlockId,
+      index: number
+    ) => {}
 
-    const onMouseUpBlockInput = (e, id, i) => {
+    const onMouseUpBlockInput = (
+      e: MouseEvent<any>,
+      id: BlockId,
+      i: number
+    ) => {
       const { click } = this
       this.click = null
       if (!click) {
@@ -232,20 +252,19 @@ export default class Stage extends Component<any, any> {
       }
     }
 
-    const onDoubleClickBlockBody = (e, id) => {
+    const onDoubleClickBlockBody = (e: MouseEvent<any>, id: BlockId) => {
       this.click = null
-      e.stopPropagation()
       openModalWithBlock(id)
     }
 
-    const onMouseDownBlockOutput = (e, id) => {
+    const onMouseDownBlockOutput = (e: MouseEvent<any>, id: BlockId) => {
       this.click = {
         type: "edge",
         id
       }
     }
 
-    const onMouseUpBlockOutput = (e, id) => {
+    const onMouseUpBlockOutput = (e: MouseEvent<any>, id: BlockId) => {
       const { click } = this
       this.click = null
       if (!click) {
@@ -260,7 +279,7 @@ export default class Stage extends Component<any, any> {
       this.setState({ modalIsOpen: false })
     }
 
-    const onClickModalOK = e => {
+    const onClickModalOK = (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault()
       e.stopPropagation()
       closeModal()
@@ -273,11 +292,11 @@ export default class Stage extends Component<any, any> {
       }))
     }
 
-    const onClickBlockRemove = (e, id) => {
+    const onClickBlockRemove = (e: MouseEvent<any>, id: BlockId) => {
       blockStore.removeBlock(id)
     }
 
-    const onClickBlockDupulicate = (e, id) => {
+    const onClickBlockDupulicate = (e: MouseEvent<any>, id: BlockId) => {
       const block = blockStore.getBlock(id)
       blockStore.addBlock({
         ...block,
@@ -285,7 +304,7 @@ export default class Stage extends Component<any, any> {
       })
     }
 
-    const onClickBlockMakeReference = (e, id) => {
+    const onClickBlockMakeReference = (e: MouseEvent<any>, id: BlockId) => {
       const block = blockStore.getBlock(id)
       const link = block.link || id
       blockStore.addBlock({
@@ -326,12 +345,21 @@ export default class Stage extends Component<any, any> {
               linked={b.linked}
               isAsync={b.isAsync}
               key={b.id}
-              containerRef={c => (this.blockElements[b.id] = c)}
+              containerRef={c => {
+                if (c != null) {
+                  this.blockElements[b.id] = c
+                }
+              }}
             />
           )
         })}
         {previewBlock && (
-          <Block key="preview" isPreview={true} {...previewBlock} />
+          <Block
+            linked={false}
+            key="preview"
+            isPreview={true}
+            {...previewBlock}
+          />
         )}
         <Modal
           contentLabel="edit block"

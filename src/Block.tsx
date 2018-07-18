@@ -1,9 +1,16 @@
-import React, { Component, SFC } from "react"
+import React, { Component, SFC, MouseEvent } from "react"
 import Icon from "./Icon"
 import "./Block.css"
-import _ from "lodash"
+import _, { Omit } from "lodash"
+import { DisplayBlock, BlockId } from "./types"
 
-function Port({ type, onMouseDown, onMouseUp }) {
+export interface PortProps {
+  type: string
+  onMouseDown: (e: MouseEvent<any>) => void
+  onMouseUp: (e: MouseEvent<any>) => void
+}
+
+const Port: SFC<PortProps> = ({ type, onMouseDown, onMouseUp }) => {
   return (
     <div className="Port" onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
       <Icon name={`arrow-${type}-drop-circle-outline`} />
@@ -11,15 +18,27 @@ function Port({ type, onMouseDown, onMouseUp }) {
   )
 }
 
-function DropDownMenu({ items, onRequestClose }) {
-  function onClick(e, handler) {
-    onRequestClose()
-    handler(e)
-  }
+export interface DropDownItem {
+  name: string
+  onClick: (e: MouseEvent<any>) => void
+}
+
+export interface DropDownMenuProps {
+  items: DropDownItem[]
+  onRequestClose: () => void
+}
+
+const DropDownMenu: SFC<DropDownMenuProps> = ({ items, onRequestClose }) => {
   return (
     <div className="drop-down">
       {items.map((item, i) => (
-        <div onClick={e => onClick(e, item.onClick)} key={i}>
+        <div
+          onClick={e => {
+            onRequestClose()
+            item.onClick(e)
+          }}
+          key={i}
+        >
           {item.name}
         </div>
       ))}
@@ -27,7 +46,27 @@ function DropDownMenu({ items, onRequestClose }) {
   )
 }
 
-const Block: SFC<any> = ({
+export type BlockProps = DisplayBlock & {
+  isPreview?: boolean
+  containerRef?: (c: HTMLElement | null) => void
+  onMouseDownHeader?: (e: MouseEvent<any>, id: BlockId) => void
+  onDoubleClickHeader?: (e: MouseEvent<any>, id: BlockId) => void
+  onMouseDownInput?: (e: MouseEvent<any>, id: BlockId, index: number) => void
+  onMouseUpInput?: (e: MouseEvent<any>, id: BlockId, index: number) => void
+  onMouseDownOutput?: (e: MouseEvent<any>, id: BlockId) => void
+  onMouseUpOutput?: (e: MouseEvent<any>, id: BlockId) => void
+  onDoubleClickBody?: (e: MouseEvent<any>, id: BlockId) => void
+  onClickMakeReference?: (e: MouseEvent<any>, id: BlockId) => void
+  onClickDupulicate?: (e: MouseEvent<any>, id: BlockId) => void
+  onClickRemove?: (e: MouseEvent<any>, id: BlockId) => void
+  isMenuOpened: boolean
+  openMenu: () => void
+  closeMenu: () => void
+}
+
+const NOP = () => {}
+
+const Block: SFC<BlockProps> = ({
   code,
   name,
   x,
@@ -38,16 +77,16 @@ const Block: SFC<any> = ({
   isPreview,
   inputLength,
   containerRef,
-  onMouseDownHeader,
-  onDoubleClickHeader,
-  onMouseDownInput,
-  onMouseUpInput,
-  onMouseDownOutput,
-  onMouseUpOutput,
-  onDoubleClickBody,
-  onClickMakeReference,
-  onClickDupulicate,
-  onClickRemove,
+  onMouseDownHeader = NOP,
+  onDoubleClickHeader = NOP,
+  onMouseDownInput = NOP,
+  onMouseUpInput = NOP,
+  onMouseDownOutput = NOP,
+  onMouseUpOutput = NOP,
+  onDoubleClickBody = NOP,
+  onClickMakeReference = NOP,
+  onClickDupulicate = NOP,
+  onClickRemove = NOP,
   isMenuOpened,
   openMenu,
   closeMenu
@@ -63,12 +102,19 @@ const Block: SFC<any> = ({
     <div
       className={classes.filter(c => c).join(" ")}
       style={{ left: x, top: y }}
-      ref={containerRef}
+      ref={c => {
+        if (containerRef != undefined) {
+          containerRef(c)
+        }
+      }}
     >
       <div
         className="header"
         onMouseDown={e => onMouseDownHeader(e, id)}
-        onDoubleClick={e => onDoubleClickHeader(e, id)}
+        onDoubleClick={e => {
+          e.stopPropagation()
+          onDoubleClickHeader(e, id)
+        }}
       >
         <div className="name">
           {linked && <Icon name="link" className="link-icon" />}
@@ -126,13 +172,11 @@ const Block: SFC<any> = ({
   )
 }
 
-export default class extends Component {
-  constructor(props) {
-    super(props)
-
-    this.state = {
-      isMenuOpened: false
-    }
+export default class extends Component<
+  Omit<BlockProps, "isMenuOpened" | "openMenu" | "closeMenu">
+> {
+  state = {
+    isMenuOpened: false
   }
 
   render() {

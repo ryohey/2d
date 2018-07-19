@@ -25,3 +25,4 @@ The graphical interface for the Flow-Based Programming.
 - Show parameter name `unimplemented`
 - Incremental search for blocks `unimplemented`
 - Align block layout `unimplemented`
+- Nested graphs

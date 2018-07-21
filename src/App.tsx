@@ -9,6 +9,7 @@ import exampleBlocks from "./helpers/exampleBlocks"
 import exampleCodes from "./helpers/exampleCodes"
 
 import "./App.css"
+import { HelpModal } from "./HelpModal"
 
 const blockStore = new BlockStore()
 const codeStore = new CodeStore()
@@ -30,6 +31,10 @@ const Stage = observer(_Stage)
 const CodeOutput = observer(_CodeOutput)
 
 class App extends Component {
+  state = {
+    isHelpModalOpen: false
+  }
+
   render() {
     const onClickPlay = () => {
       const code = buildCode(blockStore.blocks, blockStore.edges)
@@ -39,6 +44,14 @@ class App extends Component {
     const onClickClear = () => {
       blockStore.edges = []
       blockStore.blocks = []
+    }
+
+    const openHelpModal = () => {
+      this.setState({ isHelpModalOpen: true })
+    }
+
+    const closeHelpModal = () => {
+      this.setState({ isHelpModalOpen: false })
     }
 
     return (
@@ -56,6 +69,9 @@ class App extends Component {
             href="https://github.com/ryohey/2d"
           >
             <Icon name="github-circle" />
+          </a>
+          <a className="ToolbarButton" onClick={openHelpModal}>
+            Help
           </a>
         </div>
         <div className="main">
@@ -90,6 +106,7 @@ class App extends Component {
             <CodeOutput blockStore={blockStore} />
           </div>
         </div>
+        <HelpModal isOpen={this.state.isHelpModalOpen} close={closeHelpModal} />
       </div>
     )
   }

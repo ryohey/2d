@@ -79,13 +79,15 @@ input[type="checkbox"] {
   background: var(--background-color);
   margin-right: 1em;
   color: white;
+  cursor: pointer;
 }
 
 .ToolbarButton:hover {
   background: rgba(255, 255, 255, 0.17);
 }
 
-.BlockModalOverlay {
+.BlockModalOverlay,
+.HelpModalOverlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -95,7 +97,8 @@ input[type="checkbox"] {
   outline: none;
 }
 
-.BlockModal {
+.BlockModal,
+.HelpModal {
   position: absolute;
   top: 3em;
   left: 3em;
@@ -108,6 +111,15 @@ input[type="checkbox"] {
   padding: 1em;
   max-width: 40em;
   margin: 0 auto;
+}
+
+.HelpModal dt {
+  font-weight: bold;
+}
+
+.HelpModal dd {
+  margin-bottom: 1rem;
+  margin-left: 0;
 }
 
 .BlockModal .section {

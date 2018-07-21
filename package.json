@@ -2,7 +2,7 @@
   "name": "2d",
   "version": "0.0.1",
   "private": true,
-  "homepage": "https://ryohey.github.io/2d",
+  "homepage": "https://ryohey.github.io/2d/",
   "devDependencies": {
     "@types/classnames": "^2.2.5",
     "@types/jest": "^23.3.0",

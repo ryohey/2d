@@ -125,7 +125,9 @@ export default function buildCode(blocks: IBlock[], edges: IEdge[]) {
       }
       const promiseInputs = inputs.filter(i => i.endsWith("_p"))
       const isAsync = block.isAsync || promiseInputs.length > 0
-      const varName = isAsync ? `out${outputIndex}_p` : `out${outputIndex}`
+      const varName =
+        `${block.name ? block.name : "block"}_out${outputIndex}` +
+        (isAsync ? "_p" : "")
       outputIndex++
       outputVarNames[id] = varName
       const funcName = getFuncVarName(block)

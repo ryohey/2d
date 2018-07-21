@@ -1,6 +1,7 @@
 import _ from "lodash"
 import { IBlock, IEdge, BlockId } from "../types"
 import { notEmpty } from "./typeHelper"
+import { createFunction } from "./functionHelper"
 
 function wrapPromiseAll(values: string[]) {
   if (values.length === 1) {
@@ -61,8 +62,13 @@ export default function buildCode(blocks: IBlock[], edges: IEdge[]) {
           return null
         }
 
-        // TODO: Components.utils.Sandbox を使う
-        const func = eval(`() => { return ${block.code} }`)()
+        const code = block.code
+
+        if (code === undefined) {
+          return null
+        }
+
+        const func = createFunction(code)
         const noInput = func.length === 0
         if (noInput) {
           // 入力が無い

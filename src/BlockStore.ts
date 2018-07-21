@@ -2,6 +2,7 @@ import { action, observable } from "mobx"
 import _ from "lodash"
 import { IEdge, IBlock, BlockId, DisplayBlock, PreviewEdge } from "./types"
 import { Optional } from "./helpers/typeHelper"
+import { createFunction } from "./helpers/functionHelper"
 
 export default class BlockStore {
   @observable blocks: IBlock[] = []
@@ -53,8 +54,11 @@ export default class BlockStore {
     if (block.link) {
       block = this.getBlock(block.link)
     }
-    // TODO: Components.utils.Sandbox を使う
-    const func = eval(`() => { return ${block.code} }`)()
+    const code = block.code
+    if (code === undefined) {
+      return 0
+    }
+    const func = createFunction(code)
     return func.length
   }
 

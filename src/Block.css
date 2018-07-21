@@ -61,7 +61,8 @@
   display: flex;
 }
 
-.Block .inputs, .Block .outputs {
+.Block .inputs,
+.Block .outputs {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -99,10 +100,10 @@
   box-shadow: 0 2px 9px rgba(0, 0, 0, 0.24);
 }
 
-.Block .drop-down>div {
+.Block .drop-down > div {
   padding: 0.5em;
 }
 
-.Block .drop-down>div:hover {
+.Block .drop-down > div:hover {
   background: var(--secondary-background-color);
 }

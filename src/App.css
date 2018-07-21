@@ -78,6 +78,7 @@ input[type="checkbox"] {
   padding: 0em 0.5em;
   background: var(--background-color);
   margin-right: 1em;
+  color: white;
 }
 
 .ToolbarButton:hover {

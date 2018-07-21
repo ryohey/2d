@@ -50,6 +50,13 @@ class App extends Component {
           <a className="ToolbarButton" onClick={onClickClear}>
             <Icon name="delete" />
           </a>
+          <a
+            className="ToolbarButton"
+            target="_blank"
+            href="https://github.com/ryohey/2d"
+          >
+            <Icon name="github-circle" />
+          </a>
         </div>
         <div className="main">
           <div className="ToolBox">

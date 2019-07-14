@@ -35,9 +35,9 @@ export default class Stage extends Component<StageProps, StageState> {
     }
   }
 
-  canvas: HTMLCanvasElement | null
-  container: HTMLElement | null
-  click: ClickData | null
+  canvas: HTMLCanvasElement | null = null
+  container: HTMLElement | null = null
+  click: ClickData | null = null
 
   positionOfInput(id: BlockId, index: number) {
     const block = this.blockElements[id]

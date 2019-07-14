@@ -4,35 +4,47 @@
   "private": true,
   "homepage": "https://ryohey.github.io/2d/",
   "devDependencies": {
-    "@types/classnames": "^2.2.5",
-    "@types/jest": "^23.3.0",
-    "@types/lodash": "^4.14.112",
-    "@types/react": "^16.4.6",
-    "@types/react-dom": "^16.0.6",
-    "@types/react-modal": "^3.2.0",
-    "prettier": "^1.13.7",
-    "react-scripts-ts": "^2.16.0",
+    "@types/classnames": "^2.2.9",
+    "@types/jest": "^24.0.15",
+    "@types/lodash": "^4.14.136",
+    "@types/react": "^16.8.23",
+    "@types/react-dom": "^16.8.4",
+    "@types/react-modal": "^3.8.2",
+    "prettier": "^1.18.2",
+    "react-scripts": "3.0.1",
     "shx": "^0.3.2",
-    "tslint": "^5.11.0",
-    "tslint-config-prettier": "^1.13.0",
-    "tslint-react": "^3.6.0",
-    "typescript": "^2.9.2"
+    "tslint": "^5.18.0",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-react": "^4.0.0",
+    "typescript": "^3.5.3"
   },
   "dependencies": {
     "classnames": "^2.2.6",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.14",
     "mdi": "^2.2.43",
-    "mobx": "^5.0.3",
-    "mobx-react": "^5.2.3",
-    "react": "^16.4.1",
-    "react-dom": "^16.4.1",
-    "react-modal": "^3.5.1"
+    "mobx": "^5.11.0",
+    "mobx-react": "^6.1.1",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-modal": "^3.8.2"
   },
   "scripts": {
-    "start": "react-scripts-ts start",
-    "build": "react-scripts-ts build",
-    "test": "react-scripts-ts test --env=jsdom",
-    "eject": "react-scripts-ts eject",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
     "deploy": "shx rm -rf build docs && npm run build && shx cp -r build docs && shx echo Done"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

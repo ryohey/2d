@@ -103,7 +103,7 @@ const Block: SFC<BlockProps> = ({
       className={classes.filter(c => c).join(" ")}
       style={{ left: x, top: y }}
       ref={c => {
-        if (containerRef != undefined) {
+        if (containerRef !== undefined) {
           containerRef(c)
         }
       }}

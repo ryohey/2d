@@ -19,7 +19,7 @@ interface Calculatable {
 export default function buildCode(blocks: IBlock[], edges: IEdge[]) {
   function getFuncVarName(block: IBlock) {
     const f = block.name ? `${block.name}` : `func${block.id}`
-    if (window[f] !== undefined) {
+    if ((window as any)[f] !== undefined) {
       // グローバルな関数と名前が被らないようにする
       return `__${f}`
     }

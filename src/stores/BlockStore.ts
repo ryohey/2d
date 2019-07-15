@@ -1,8 +1,8 @@
 import { action, observable } from "mobx"
 import _ from "lodash"
-import { IEdge, IBlock, BlockId, DisplayBlock, PreviewEdge } from "./types"
-import { Optional } from "./helpers/typeHelper"
-import { createFunction } from "./helpers/functionHelper"
+import { IEdge, IBlock, BlockId, DisplayBlock, PreviewEdge } from "../types"
+import { Optional } from "../helpers/typeHelper"
+import { createFunction } from "../helpers/functionHelper"
 
 export default class BlockStore {
   @observable blocks: IBlock[] = []

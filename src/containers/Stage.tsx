@@ -1,8 +1,8 @@
 import React, { Component, FormEvent, MouseEvent } from "react"
 import Modal from "react-modal"
-import Block from "./Block"
-import { BlockId, IPoint, IBlock } from "./types"
-import BlockStore from "./BlockStore"
+import Block from "../components/Block"
+import { BlockId, IPoint, IBlock } from "../types"
+import BlockStore from "../stores/BlockStore"
 
 interface ClickData {
   type: string

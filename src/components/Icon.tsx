@@ -1,6 +1,6 @@
 import React, { SFC } from "react"
 
-import e from "./helpers/getElementType"
+import e from "../helpers/getElementType"
 import classnames from "classnames"
 
 import "./Icon.css"

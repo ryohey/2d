@@ -1,15 +1,15 @@
 import React, { Component } from "react"
 import { observer } from "mobx-react"
-import Icon from "./Icon"
+import Icon from "../components/Icon"
 import _Stage from "./Stage"
-import BlockStore from "./BlockStore"
-import CodeStore from "./CodeStore"
-import buildCode from "./helpers/buildCode"
-import exampleBlocks from "./helpers/exampleBlocks"
-import exampleCodes from "./helpers/exampleCodes"
+import BlockStore from "../stores/BlockStore"
+import CodeStore from "../stores/CodeStore"
+import buildCode from "../helpers/buildCode"
+import exampleBlocks from "../helpers/exampleBlocks"
+import exampleCodes from "../helpers/exampleCodes"
 
 import "./App.css"
-import { HelpModal } from "./HelpModal"
+import { HelpModal } from "../components/HelpModal"
 
 const blockStore = new BlockStore()
 const codeStore = new CodeStore()

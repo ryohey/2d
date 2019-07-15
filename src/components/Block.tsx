@@ -2,7 +2,7 @@ import React, { Component, SFC, MouseEvent } from "react"
 import Icon from "./Icon"
 import "./Block.css"
 import _, { Omit } from "lodash"
-import { DisplayBlock, BlockId } from "./types"
+import { DisplayBlock, BlockId } from "../types"
 
 export interface PortProps {
   type: string

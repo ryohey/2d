@@ -1,8 +1,9 @@
-import React, { Component, FormEvent, MouseEvent } from "react"
-import Block from "./Block"
+import React, { MouseEvent, useState, SFC } from "react"
+import { Block } from "./Block"
 import { BlockId, IPoint, IBlock } from "../types"
-import { EditBlockModal, ModalInput } from "./EditBlockModal"
+import { EditBlockModal } from "./EditBlockModal"
 import { BlockStore } from "../stores/BlockStore"
+import { DrawCanvas } from "../components/DrawCanvas"
 
 interface ClickData {
   type: string
@@ -20,20 +21,18 @@ export interface StageState {
   editingBlock: IBlock | null
 }
 
-export default class Stage extends Component<StageProps, StageState> {
-  blockElements: { [id: number]: HTMLElement | undefined } = {}
+export const Stage: SFC<StageProps> = ({ blockStore }) => {
+  const { previewBlock } = blockStore
+  const [container, setContainer] = useState<HTMLElement | null>(null)
+  const [click, setClick] = useState<ClickData | null>(null)
+  const [modalIsOpen, setModalIsOpen] = useState<Boolean>(false)
+  const [editingBlock, setEditingBlock] = useState<IBlock | null>(null)
+  const [blockElements, setBlockElements] = useState<{
+    [id: number]: HTMLElement | undefined
+  }>({})
 
-  state: StageState = {
-    modalIsOpen: false,
-    editingBlock: null
-  }
-
-  canvas: HTMLCanvasElement | null = null
-  container: HTMLElement | null = null
-  click: ClickData | null = null
-
-  positionOfInput(id: BlockId, index: number) {
-    const block = this.blockElements[id]
+  const positionOfInput = (id: BlockId, index: number) => {
+    const block = blockElements[id]
     if (block === undefined) {
       return {
         x: 0,
@@ -46,8 +45,8 @@ export default class Stage extends Component<StageProps, StageState> {
     }
   }
 
-  positionOfOutput(id: BlockId) {
-    const block = this.blockElements[id]
+  const positionOfOutput = (id: BlockId) => {
+    const block = blockElements[id]
     if (block === undefined) {
       return {
         x: 0,
@@ -60,26 +59,9 @@ export default class Stage extends Component<StageProps, StageState> {
     }
   }
 
-  componentDidMount() {
-    if (this.canvas === null || this.container === null) {
-      return
-    }
-    this.canvas.width = this.container.clientWidth
-    this.canvas.height = this.container.clientHeight
-    this.renderEdges()
-  }
-
-  renderEdges() {
-    const { edges, previewEdge } = this.props.blockStore
-    const { canvas } = this
-    if (!canvas) {
-      return
-    }
-    const ctx = canvas.getContext("2d")
-
-    if (ctx === null) {
-      return
-    }
+  const renderEdges = (ctx: CanvasRenderingContext2D) => {
+    const { edges, previewEdge } = blockStore
+    const { canvas } = ctx
 
     const renderCurve = (from: IPoint, to: IPoint) => {
       ctx.beginPath()
@@ -100,250 +82,241 @@ export default class Stage extends Component<StageProps, StageState> {
     ctx.lineWidth = 2
     ctx.strokeStyle = "white"
     for (let edge of edges) {
-      const from = this.positionOfOutput(edge.fromId)
-      const to = this.positionOfInput(edge.toId, edge.toIndex)
+      const from = positionOfOutput(edge.fromId)
+      const to = positionOfInput(edge.toId, edge.toIndex)
       renderCurve(from, to)
     }
 
     if (previewEdge) {
       ctx.strokeStyle = "rgba(255, 255, 255, 0.2)"
-      const from = this.positionOfOutput(previewEdge.fromId)
+      const from = positionOfOutput(previewEdge.fromId)
       renderCurve(from, previewEdge.toPosition)
     }
   }
 
-  render() {
-    const { blockStore } = this.props
+  const onMouseUpStage = () => {
+    setClick(null)
+    blockStore.previewEdge = null
+
     const { previewBlock } = blockStore
-
-    const onMouseUpStage = () => {
-      this.click = null
-      blockStore.previewEdge = null
-
-      const { previewBlock } = blockStore
-      if (previewBlock) {
-        blockStore.previewBlock = null
-        blockStore.addBlock(previewBlock)
-      }
+    if (previewBlock) {
+      blockStore.previewBlock = null
+      blockStore.addBlock(previewBlock)
     }
+  }
 
-    const onDoubleClickStage = (e: MouseEvent<any>) => {
-      this.click = null
+  const onDoubleClickStage = (e: MouseEvent<any>) => {
+    setClick(null)
+    const bounds = e.currentTarget.getBoundingClientRect()
+    blockStore.addBlock({
+      x: e.clientX - bounds.left,
+      y: e.clientY - bounds.top,
+      name: "func",
+      code: `x => x`
+    })
+  }
+
+  const onMouseMoveStage = (e: MouseEvent<any>) => {
+    if (blockStore.previewBlock) {
       const bounds = e.currentTarget.getBoundingClientRect()
-      blockStore.addBlock({
+      blockStore.previewBlock = {
+        ...blockStore.previewBlock,
         x: e.clientX - bounds.left,
-        y: e.clientY - bounds.top,
-        name: "func",
-        code: `x => x`
-      })
+        y: e.clientY - bounds.top
+      }
+      return
     }
 
-    const onMouseMoveStage = (e: MouseEvent<any>) => {
-      if (blockStore.previewBlock) {
-        const bounds = e.currentTarget.getBoundingClientRect()
-        blockStore.previewBlock = {
-          ...blockStore.previewBlock,
-          x: e.clientX - bounds.left,
-          y: e.clientY - bounds.top
-        }
-        return
-      }
+    if (!click) {
+      return
+    }
 
-      const { click } = this
-      if (!click) {
-        return
-      }
-
-      switch (click.type) {
-        case "block": {
-          if (this.click === null) {
-            break
-          }
-          const { startOffset, start } = this.click
-          if (startOffset === undefined || start === undefined) {
-            break
-          }
-          const delta = {
-            x: e.clientX - startOffset.x,
-            y: e.clientY - startOffset.y
-          }
-
-          blockStore.updateBlock(click.id, b => ({
-            ...b,
-            x: start.x + delta.x,
-            y: start.y + delta.y
-          }))
+    switch (click.type) {
+      case "block": {
+        if (click === null) {
           break
         }
-        case "edge": {
-          const bounds = e.currentTarget.getBoundingClientRect()
-          blockStore.previewEdge = {
-            fromId: click.id,
-            toPosition: {
-              x: e.clientX - bounds.left,
-              y: e.clientY - bounds.top
-            }
+        const { startOffset, start } = click
+        if (startOffset === undefined || start === undefined) {
+          break
+        }
+        const delta = {
+          x: e.clientX - startOffset.x,
+          y: e.clientY - startOffset.y
+        }
+
+        blockStore.updateBlock(click.id, b => ({
+          ...b,
+          x: start.x + delta.x,
+          y: start.y + delta.y
+        }))
+        break
+      }
+      case "edge": {
+        const bounds = e.currentTarget.getBoundingClientRect()
+        blockStore.previewEdge = {
+          fromId: click.id,
+          toPosition: {
+            x: e.clientX - bounds.left,
+            y: e.clientY - bounds.top
           }
         }
       }
     }
-
-    const onMouseDownBlockHeader = (e: MouseEvent<any>, id: BlockId) => {
-      const block = blockStore.getBlock(id)
-      this.click = {
-        type: "block",
-        id,
-        start: {
-          x: block.x,
-          y: block.y
-        },
-        startOffset: {
-          x: e.clientX,
-          y: e.clientY
-        }
-      }
-    }
-
-    const openModalWithBlock = (id: BlockId) => {
-      let block = blockStore.getBlock(id)
-      block = block.link ? blockStore.getBlock(block.link) : block
-      this.setState({
-        modalIsOpen: true,
-        editingBlock: block
-      })
-    }
-
-    const onDoubleClickBlockHeader = (e: MouseEvent<any>, id: BlockId) => {
-      this.click = null
-      openModalWithBlock(id)
-    }
-
-    const onMouseDownBlockInput = (
-      e: MouseEvent<any>,
-      id: BlockId,
-      index: number
-    ) => {}
-
-    const onMouseUpBlockInput = (
-      e: MouseEvent<any>,
-      id: BlockId,
-      i: number
-    ) => {
-      const { click } = this
-      this.click = null
-      if (!click) {
-        return
-      }
-
-      if (click.type === "edge") {
-        blockStore.addEdge(click.id, id, i)
-      }
-    }
-
-    const onDoubleClickBlockBody = (e: MouseEvent<any>, id: BlockId) => {
-      this.click = null
-      openModalWithBlock(id)
-    }
-
-    const onMouseDownBlockOutput = (e: MouseEvent<any>, id: BlockId) => {
-      this.click = {
-        type: "edge",
-        id
-      }
-    }
-
-    const onMouseUpBlockOutput = (e: MouseEvent<any>, id: BlockId) => {
-      const { click } = this
-      this.click = null
-      if (!click) {
-        return
-      }
-      if (click.type === "edge") {
-        blockStore.removeEdge(id)
-      }
-    }
-
-    const closeModal = () => {
-      this.setState({ modalIsOpen: false })
-    }
-
-    const onClickBlockRemove = (e: MouseEvent<any>, id: BlockId) => {
-      blockStore.removeBlock(id)
-    }
-
-    const onClickBlockDupulicate = (e: MouseEvent<any>, id: BlockId) => {
-      const block = blockStore.getBlock(id)
-      blockStore.addBlock({
-        ...block,
-        y: block.y + 180
-      })
-    }
-
-    const onClickBlockMakeReference = (e: MouseEvent<any>, id: BlockId) => {
-      const block = blockStore.getBlock(id)
-      const link = block.link || id
-      blockStore.addBlock({
-        link,
-        x: block.x,
-        y: block.y + 180
-      })
-    }
-
-    this.renderEdges()
-
-    return (
-      <div
-        onDoubleClick={onDoubleClickStage}
-        onMouseUp={onMouseUpStage}
-        onMouseMove={onMouseMoveStage}
-        className="Stage"
-        ref={c => (this.container = c)}
-      >
-        <canvas ref={c => (this.canvas = c)} />
-        {blockStore.allDisplayBlocks().map(b => {
-          return (
-            <Block
-              onMouseDownHeader={onMouseDownBlockHeader}
-              onDoubleClickHeader={onDoubleClickBlockHeader}
-              onMouseDownInput={onMouseDownBlockInput}
-              onMouseUpInput={onMouseUpBlockInput}
-              onMouseDownOutput={onMouseDownBlockOutput}
-              onMouseUpOutput={onMouseUpBlockOutput}
-              onDoubleClickBody={onDoubleClickBlockBody}
-              onClickDupulicate={onClickBlockDupulicate}
-              onClickRemove={onClickBlockRemove}
-              onClickMakeReference={onClickBlockMakeReference}
-              {...b}
-              inputLength={b.inputLength}
-              name={b.name}
-              code={b.code}
-              linked={b.linked}
-              isAsync={b.isAsync}
-              key={b.id}
-              containerRef={c => {
-                if (c != null) {
-                  this.blockElements[b.id] = c
-                }
-              }}
-            />
-          )
-        })}
-        {previewBlock && (
-          <Block
-            linked={false}
-            key="preview"
-            isPreview={true}
-            {...previewBlock}
-          />
-        )}
-        {this.state.modalIsOpen && this.state.editingBlock !== null && (
-          <EditBlockModal
-            closeModal={closeModal}
-            blockStore={blockStore}
-            block={this.state.editingBlock}
-          />
-        )}
-      </div>
-    )
   }
+
+  const onMouseDownBlockHeader = (e: MouseEvent<any>, id: BlockId) => {
+    const block = blockStore.getBlock(id)
+    setClick({
+      type: "block",
+      id,
+      start: {
+        x: block.x,
+        y: block.y
+      },
+      startOffset: {
+        x: e.clientX,
+        y: e.clientY
+      }
+    })
+  }
+
+  const openModalWithBlock = (id: BlockId) => {
+    let block = blockStore.getBlock(id)
+    block = block.link ? blockStore.getBlock(block.link) : block
+    setModalIsOpen(true)
+    setEditingBlock(block)
+  }
+
+  const onDoubleClickBlockHeader = (e: MouseEvent<any>, id: BlockId) => {
+    setClick(null)
+    openModalWithBlock(id)
+  }
+
+  const onMouseDownBlockInput = (
+    e: MouseEvent<any>,
+    id: BlockId,
+    index: number
+  ) => {}
+
+  const onMouseUpBlockInput = (e: MouseEvent<any>, id: BlockId, i: number) => {
+    setClick(null)
+    if (!click) {
+      return
+    }
+
+    if (click.type === "edge") {
+      blockStore.addEdge(click.id, id, i)
+    }
+  }
+
+  const onDoubleClickBlockBody = (e: MouseEvent<any>, id: BlockId) => {
+    setClick(null)
+    openModalWithBlock(id)
+  }
+
+  const onMouseDownBlockOutput = (e: MouseEvent<any>, id: BlockId) => {
+    setClick({
+      type: "edge",
+      id
+    })
+  }
+
+  const onMouseUpBlockOutput = (e: MouseEvent<any>, id: BlockId) => {
+    setClick(null)
+    if (!click) {
+      return
+    }
+    if (click.type === "edge") {
+      blockStore.removeEdge(id)
+    }
+  }
+
+  const closeModal = () => {
+    setModalIsOpen(false)
+  }
+
+  const onClickBlockRemove = (e: MouseEvent<any>, id: BlockId) => {
+    blockStore.removeBlock(id)
+  }
+
+  const onClickBlockDupulicate = (e: MouseEvent<any>, id: BlockId) => {
+    const block = blockStore.getBlock(id)
+    blockStore.addBlock({
+      ...block,
+      y: block.y + 180
+    })
+  }
+
+  const onClickBlockMakeReference = (e: MouseEvent<any>, id: BlockId) => {
+    const block = blockStore.getBlock(id)
+    const link = block.link || id
+    blockStore.addBlock({
+      link,
+      x: block.x,
+      y: block.y + 180
+    })
+  }
+
+  return (
+    <div
+      onDoubleClick={onDoubleClickStage}
+      onMouseUp={onMouseUpStage}
+      onMouseMove={onMouseMoveStage}
+      className="Stage"
+      ref={setContainer}
+    >
+      {container !== null && (
+        <DrawCanvas
+          draw={renderEdges}
+          width={container.clientWidth}
+          height={container.clientHeight}
+        />
+      )}
+      {blockStore.allDisplayBlocks().map(b => {
+        return (
+          <Block
+            onMouseDownHeader={onMouseDownBlockHeader}
+            onDoubleClickHeader={onDoubleClickBlockHeader}
+            onMouseDownInput={onMouseDownBlockInput}
+            onMouseUpInput={onMouseUpBlockInput}
+            onMouseDownOutput={onMouseDownBlockOutput}
+            onMouseUpOutput={onMouseUpBlockOutput}
+            onDoubleClickBody={onDoubleClickBlockBody}
+            onClickDupulicate={onClickBlockDupulicate}
+            onClickRemove={onClickBlockRemove}
+            onClickMakeReference={onClickBlockMakeReference}
+            {...b}
+            inputLength={b.inputLength}
+            name={b.name}
+            code={b.code}
+            linked={b.linked}
+            isAsync={b.isAsync}
+            key={b.id}
+            containerRef={c => {
+              if (c != null) {
+                blockElements[b.id] = c
+                setBlockElements(blockElements)
+              }
+            }}
+          />
+        )
+      })}
+      {previewBlock && (
+        <Block
+          linked={false}
+          key="preview"
+          isPreview={true}
+          {...previewBlock}
+        />
+      )}
+      {modalIsOpen && editingBlock !== null && (
+        <EditBlockModal
+          closeModal={closeModal}
+          blockStore={blockStore}
+          block={editingBlock}
+        />
+      )}
+    </div>
+  )
 }

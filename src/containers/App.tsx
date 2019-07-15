@@ -1,7 +1,7 @@
-import React, { Component } from "react"
+import React, { SFC, useState } from "react"
 import { observer } from "mobx-react"
 import Icon from "../components/Icon"
-import _Stage from "./Stage"
+import { Stage as _Stage } from "./Stage"
 import { BlockStore } from "../stores/BlockStore"
 import { CodeStore } from "../stores/CodeStore"
 import buildCode from "../helpers/buildCode"
@@ -30,84 +30,75 @@ function _CodeOutput({ blockStore }: { blockStore: BlockStore }) {
 const Stage = observer(_Stage)
 const CodeOutput = observer(_CodeOutput)
 
-export class App extends Component {
-  state = {
-    isHelpModalOpen: false
+export const App: SFC<{}> = () => {
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false)
+
+  const onClickPlay = () => {
+    const code = buildCode(blockStore.blocks, blockStore.edges)
+    eval(code)
   }
 
-  render() {
-    const onClickPlay = () => {
-      const code = buildCode(blockStore.blocks, blockStore.edges)
-      eval(code)
-    }
+  const onClickClear = () => {
+    blockStore.edges = []
+    blockStore.blocks = []
+  }
 
-    const onClickClear = () => {
-      blockStore.edges = []
-      blockStore.blocks = []
-    }
-
-    const openHelpModal = () => {
-      this.setState({ isHelpModalOpen: true })
-    }
-
-    const closeHelpModal = () => {
-      this.setState({ isHelpModalOpen: false })
-    }
-
-    return (
-      <div className="App">
-        <div className="Toolbar">
-          <a className="ToolbarButton" onClick={onClickPlay}>
-            <Icon name="play" />
-          </a>
-          <a className="ToolbarButton" onClick={onClickClear}>
-            <Icon name="delete" />
-          </a>
-          <a
-            className="ToolbarButton"
-            target="_blank"
-            href="https://github.com/ryohey/2d"
-          >
-            <Icon name="github-circle" />
-          </a>
-          <a className="ToolbarButton" onClick={openHelpModal}>
-            Help
-          </a>
-        </div>
-        <div className="main">
-          <div className="ToolBox">
-            <div className="header">toolbox</div>
-            {codeStore.codes.map((c, i) => (
-              <div
-                key={i}
-                className="item"
-                onMouseDown={e => {
-                  e.stopPropagation()
-                  const parent = e.currentTarget.parentElement
-                  if (parent == null) {
-                    return
-                  }
-                  const bounds = parent.getBoundingClientRect()
-                  blockStore.previewBlock = {
-                    ...c,
-                    x: e.clientX - bounds.width,
-                    y: e.clientY - bounds.top,
-                    inputLength: c.inputLength
-                  }
-                }}
-              >
-                <div className="name">{c.name}</div>
-                <Icon name="arrow-top-right" />
-              </div>
-            ))}
-          </div>
-          <div className="content">
-            <Stage blockStore={blockStore} />
-            <CodeOutput blockStore={blockStore} />
-          </div>
-        </div>
-        <HelpModal isOpen={this.state.isHelpModalOpen} close={closeHelpModal} />
+  return (
+    <div className="App">
+      <div className="Toolbar">
+        <a className="ToolbarButton" onClick={onClickPlay}>
+          <Icon name="play" />
+        </a>
+        <a className="ToolbarButton" onClick={onClickClear}>
+          <Icon name="delete" />
+        </a>
+        <a
+          className="ToolbarButton"
+          target="_blank"
+          href="https://github.com/ryohey/2d"
+        >
+          <Icon name="github-circle" />
+        </a>
+        <a className="ToolbarButton" onClick={() => setIsHelpModalOpen(true)}>
+          Help
+        </a>
       </div>
-    )
-  }
+      <div className="main">
+        <div className="ToolBox">
+          <div className="header">toolbox</div>
+          {codeStore.codes.map((c, i) => (
+            <div
+              key={i}
+              className="item"
+              onMouseDown={e => {
+                e.stopPropagation()
+                const parent = e.currentTarget.parentElement
+                if (parent == null) {
+                  return
+                }
+                const bounds = parent.getBoundingClientRect()
+                blockStore.previewBlock = {
+                  ...c,
+                  x: e.clientX - bounds.width,
+                  y: e.clientY - bounds.top,
+                  inputLength: c.inputLength
+                }
+              }}
+            >
+              <div className="name">{c.name}</div>
+              <Icon name="arrow-top-right" />
+            </div>
+          ))}
+        </div>
+        <div className="content">
+          <Stage blockStore={blockStore} />
+          <CodeOutput blockStore={blockStore} />
+        </div>
+      </div>
+      <HelpModal
+        isOpen={isHelpModalOpen}
+        close={() => setIsHelpModalOpen(false)}
+      />
+    </div>
+  )
 }

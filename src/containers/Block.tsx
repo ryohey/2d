@@ -1,7 +1,7 @@
-import React, { Component, SFC, MouseEvent } from "react"
+import React, { SFC, MouseEvent, useState } from "react"
 import Icon from "../components/Icon"
 import "./Block.css"
-import _, { Omit } from "lodash"
+import _ from "lodash"
 import { DisplayBlock, BlockId } from "../types"
 import { DropDownMenu } from "../components/DropDownMenu"
 
@@ -32,14 +32,11 @@ export type BlockProps = DisplayBlock & {
   onClickMakeReference?: (e: MouseEvent<any>, id: BlockId) => void
   onClickDupulicate?: (e: MouseEvent<any>, id: BlockId) => void
   onClickRemove?: (e: MouseEvent<any>, id: BlockId) => void
-  isMenuOpened: boolean
-  openMenu: () => void
-  closeMenu: () => void
 }
 
 const NOP = () => {}
 
-const Block: SFC<BlockProps> = ({
+export const Block: SFC<BlockProps> = ({
   code,
   name,
   x,
@@ -59,11 +56,10 @@ const Block: SFC<BlockProps> = ({
   onDoubleClickBody = NOP,
   onClickMakeReference = NOP,
   onClickDupulicate = NOP,
-  onClickRemove = NOP,
-  isMenuOpened,
-  openMenu,
-  closeMenu
+  onClickRemove = NOP
 }) => {
+  const [isMenuOpened, setIsMenuOpened] = useState(false)
+
   const classes = [
     "Block",
     linked && "linked",
@@ -98,7 +94,7 @@ const Block: SFC<BlockProps> = ({
           onDoubleClick={e => e.stopPropagation()}
           onClick={e => {
             e.stopPropagation()
-            isMenuOpened ? closeMenu() : openMenu()
+            isMenuOpened ? setIsMenuOpened(false) : setIsMenuOpened(true)
           }}
         >
           <Icon name="menu-down" />
@@ -114,7 +110,7 @@ const Block: SFC<BlockProps> = ({
             { name: "duplicate", onClick: e => onClickDupulicate(e, id) },
             { name: "remove", onClick: e => onClickRemove(e, id) }
           ]}
-          onRequestClose={closeMenu}
+          onRequestClose={() => setIsMenuOpened(false)}
         />
       )}
       <div className="ports">
@@ -143,27 +139,4 @@ const Block: SFC<BlockProps> = ({
       )}
     </div>
   )
-}
-
-export default class extends Component<
-  Omit<BlockProps, "isMenuOpened" | "openMenu" | "closeMenu">
-> {
-  state = {
-    isMenuOpened: false
-  }
-
-  render() {
-    return (
-      <Block
-        {...this.props}
-        {...this.state}
-        openMenu={() => {
-          this.setState({ isMenuOpened: true })
-        }}
-        closeMenu={() => {
-          this.setState({ isMenuOpened: false })
-        }}
-      />
-    )
-  }
 }

@@ -1,8 +1,9 @@
 import React, { Component, SFC, MouseEvent } from "react"
-import Icon from "./Icon"
+import Icon from "../components/Icon"
 import "./Block.css"
 import _, { Omit } from "lodash"
 import { DisplayBlock, BlockId } from "../types"
+import { DropDownMenu } from "../components/DropDownMenu"
 
 export interface PortProps {
   type: string
@@ -14,34 +15,6 @@ const Port: SFC<PortProps> = ({ type, onMouseDown, onMouseUp }) => {
   return (
     <div className="Port" onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
       <Icon name={`arrow-${type}-drop-circle-outline`} />
-    </div>
-  )
-}
-
-export interface DropDownItem {
-  name: string
-  onClick: (e: MouseEvent<any>) => void
-}
-
-export interface DropDownMenuProps {
-  items: DropDownItem[]
-  onRequestClose: () => void
-}
-
-const DropDownMenu: SFC<DropDownMenuProps> = ({ items, onRequestClose }) => {
-  return (
-    <div className="drop-down">
-      {items.map((item, i) => (
-        <div
-          onClick={e => {
-            onRequestClose()
-            item.onClick(e)
-          }}
-          key={i}
-        >
-          {item.name}
-        </div>
-      ))}
     </div>
   )
 }

@@ -2,8 +2,8 @@ import React, { Component } from "react"
 import { observer } from "mobx-react"
 import Icon from "../components/Icon"
 import _Stage from "./Stage"
-import BlockStore from "../stores/BlockStore"
-import CodeStore from "../stores/CodeStore"
+import { BlockStore } from "../stores/BlockStore"
+import { CodeStore } from "../stores/CodeStore"
 import buildCode from "../helpers/buildCode"
 import exampleBlocks from "../helpers/exampleBlocks"
 import exampleCodes from "../helpers/exampleCodes"
@@ -30,7 +30,7 @@ function _CodeOutput({ blockStore }: { blockStore: BlockStore }) {
 const Stage = observer(_Stage)
 const CodeOutput = observer(_CodeOutput)
 
-class App extends Component {
+export class App extends Component {
   state = {
     isHelpModalOpen: false
   }
@@ -111,5 +111,3 @@ class App extends Component {
     )
   }
 }
-
-export default App

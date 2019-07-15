@@ -1,8 +1,8 @@
 import React, { Component, FormEvent, MouseEvent } from "react"
-import Modal from "react-modal"
-import Block from "../components/Block"
+import Block from "./Block"
 import { BlockId, IPoint, IBlock } from "../types"
-import BlockStore from "../stores/BlockStore"
+import { EditBlockModal, ModalInput } from "./EditBlockModal"
+import { BlockStore } from "../stores/BlockStore"
 
 interface ClickData {
   type: string
@@ -17,22 +17,15 @@ export interface StageProps {
 
 export interface StageState {
   modalIsOpen: boolean
-  modalInput: ModalInput
+  editingBlock: IBlock | null
 }
-
-type ModalInput = Pick<IBlock, "id" | "name" | "code" | "isAsync">
 
 export default class Stage extends Component<StageProps, StageState> {
   blockElements: { [id: number]: HTMLElement | undefined } = {}
 
-  state = {
+  state: StageState = {
     modalIsOpen: false,
-    modalInput: {
-      id: 0,
-      name: "",
-      code: "",
-      isAsync: false
-    }
+    editingBlock: null
   }
 
   canvas: HTMLCanvasElement | null = null
@@ -216,12 +209,7 @@ export default class Stage extends Component<StageProps, StageState> {
       block = block.link ? blockStore.getBlock(block.link) : block
       this.setState({
         modalIsOpen: true,
-        modalInput: {
-          id: block.id,
-          name: block.name,
-          code: block.code,
-          isAsync: block.isAsync
-        }
+        editingBlock: block
       })
     }
 
@@ -277,19 +265,6 @@ export default class Stage extends Component<StageProps, StageState> {
 
     const closeModal = () => {
       this.setState({ modalIsOpen: false })
-    }
-
-    const onClickModalOK = (e: FormEvent<HTMLFormElement>) => {
-      e.preventDefault()
-      e.stopPropagation()
-      closeModal()
-      const { modalInput } = this.state
-      blockStore.updateBlock(modalInput.id, b => ({
-        ...b,
-        name: modalInput.name,
-        code: modalInput.code,
-        isAsync: modalInput.isAsync
-      }))
     }
 
     const onClickBlockRemove = (e: MouseEvent<any>, id: BlockId) => {
@@ -361,70 +336,13 @@ export default class Stage extends Component<StageProps, StageState> {
             {...previewBlock}
           />
         )}
-        <Modal
-          contentLabel="edit block"
-          isOpen={this.state.modalIsOpen}
-          onRequestClose={closeModal}
-          overlayClassName="BlockModalOverlay"
-          className="BlockModal"
-        >
-          <form onSubmit={onClickModalOK}>
-            <div className="section">
-              <label>name</label>
-              <input
-                type="text"
-                value={this.state.modalInput.name}
-                onChange={e =>
-                  this.setState({
-                    modalInput: {
-                      ...this.state.modalInput,
-                      name: e.target.value
-                    }
-                  })
-                }
-              />
-            </div>
-            <div className="section">
-              <label>code</label>
-              <textarea
-                value={this.state.modalInput.code}
-                onChange={e =>
-                  this.setState({
-                    modalInput: {
-                      ...this.state.modalInput,
-                      code: e.target.value
-                    }
-                  })
-                }
-              />
-            </div>
-            <div className="section">
-              <label>async</label>
-              <div>
-                <input
-                  type="checkbox"
-                  checked={this.state.modalInput.isAsync}
-                  onChange={e =>
-                    this.setState({
-                      modalInput: {
-                        ...this.state.modalInput,
-                        isAsync: e.target.checked
-                      }
-                    })
-                  }
-                />
-              </div>
-            </div>
-            <div className="section footer">
-              <button type="button" className="button" onClick={closeModal}>
-                Cancel
-              </button>
-              <button type="submit" className="button primary">
-                OK
-              </button>
-            </div>
-          </form>
-        </Modal>
+        {this.state.modalIsOpen && this.state.editingBlock !== null && (
+          <EditBlockModal
+            closeModal={closeModal}
+            blockStore={blockStore}
+            block={this.state.editingBlock}
+          />
+        )}
       </div>
     )
   }

@@ -1,5 +1,5 @@
 import { observable } from "mobx"
 
-export default class CodeStore {
+export class CodeStore {
   @observable codes: any[] = []
 }

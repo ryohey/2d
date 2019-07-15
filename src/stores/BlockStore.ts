@@ -4,7 +4,7 @@ import { IEdge, IBlock, BlockId, DisplayBlock, PreviewEdge } from "../types"
 import { Optional } from "../helpers/typeHelper"
 import { createFunction } from "../helpers/functionHelper"
 
-export default class BlockStore {
+export class BlockStore {
   @observable blocks: IBlock[] = []
   @observable edges: IEdge[] = []
 

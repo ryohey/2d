@@ -10,6 +10,8 @@ import exampleCodes from "../helpers/exampleCodes"
 
 import "./App.css"
 import { HelpModal } from "../components/HelpModal"
+import { ToolBox } from "./ToolBox"
+import { Toolbar } from "./Toolbar"
 
 const blockStore = new BlockStore()
 const codeStore = new CodeStore()
@@ -33,63 +35,14 @@ const CodeOutput = observer(_CodeOutput)
 export const App: SFC<{}> = () => {
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false)
 
-  const onClickPlay = () => {
-    const code = buildCode(blockStore.blocks, blockStore.edges)
-    eval(code)
-  }
-
-  const onClickClear = () => {
-    blockStore.edges = []
-    blockStore.blocks = []
-  }
-
   return (
     <div className="App">
-      <div className="Toolbar">
-        <a className="ToolbarButton" onClick={onClickPlay}>
-          <Icon name="play" />
-        </a>
-        <a className="ToolbarButton" onClick={onClickClear}>
-          <Icon name="delete" />
-        </a>
-        <a
-          className="ToolbarButton"
-          target="_blank"
-          href="https://github.com/ryohey/2d"
-        >
-          <Icon name="github-circle" />
-        </a>
-        <a className="ToolbarButton" onClick={() => setIsHelpModalOpen(true)}>
-          Help
-        </a>
-      </div>
+      <Toolbar
+        blockStore={blockStore}
+        onClickHelp={() => setIsHelpModalOpen(true)}
+      />
       <div className="main">
-        <div className="ToolBox">
-          <div className="header">toolbox</div>
-          {codeStore.codes.map((c, i) => (
-            <div
-              key={i}
-              className="item"
-              onMouseDown={e => {
-                e.stopPropagation()
-                const parent = e.currentTarget.parentElement
-                if (parent == null) {
-                  return
-                }
-                const bounds = parent.getBoundingClientRect()
-                blockStore.previewBlock = {
-                  ...c,
-                  x: e.clientX - bounds.width,
-                  y: e.clientY - bounds.top,
-                  inputLength: c.inputLength
-                }
-              }}
-            >
-              <div className="name">{c.name}</div>
-              <Icon name="arrow-top-right" />
-            </div>
-          ))}
-        </div>
+        <ToolBox blockStore={blockStore} codeStore={codeStore} />
         <div className="content">
           <Stage blockStore={blockStore} />
           <CodeOutput blockStore={blockStore} />

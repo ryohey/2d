@@ -1,5 +1,5 @@
 import _ from "lodash"
-import { IBlock, IEdge, BlockId } from "../types"
+import { IBlock, IEdge, BlockId, ICodeBlock } from "../types"
 import { notEmpty } from "./typeHelper"
 import { createFunction } from "./functionHelper"
 
@@ -16,8 +16,8 @@ interface Calculatable {
   inputs: string[]
 }
 
-export default function buildCode(blocks: IBlock[], edges: IEdge[]) {
-  function getFuncVarName(block: IBlock) {
+export default function buildCode(blocks: ICodeBlock[], edges: IEdge[]) {
+  function getFuncVarName(block: ICodeBlock) {
     const f = block.name ? `${block.name}` : `func${block.id}`
     if ((window as any)[f] !== undefined) {
       // グローバルな関数と名前が被らないようにする
@@ -53,9 +53,9 @@ export default function buildCode(blocks: IBlock[], edges: IEdge[]) {
           return null
         }
 
-        let block: IBlock | undefined = _.find(blocks, b => b.id === id)
-        if (block && block.link !== undefined) {
-          block = _.find(blocks, { id: block.link })
+        let block: ICodeBlock | undefined = _.find(blocks, b => b.id === id)
+        if (block && block.reference !== undefined) {
+          block = _.find(blocks, { id: block.reference })
         }
 
         if (block === undefined) {
@@ -85,8 +85,8 @@ export default function buildCode(blocks: IBlock[], edges: IEdge[]) {
           }
           return null
         })
-        const inputVarNames = inputs.map(
-          i => (i !== null ? outputVarNames[i] : "undefined")
+        const inputVarNames = inputs.map(i =>
+          i !== null ? outputVarNames[i] : "undefined"
         )
         const allInputComputed = _.every(inputVarNames, n => n !== null)
 
@@ -116,9 +116,9 @@ export default function buildCode(blocks: IBlock[], edges: IEdge[]) {
     */
     terminals.forEach(t => {
       const { id, inputs } = t
-      let block: IBlock | undefined = _.find(blocks, b => b.id === id)
-      if (block && block.link !== undefined) {
-        block = _.find(blocks, { id: block.link })
+      let block: ICodeBlock | undefined = _.find(blocks, b => b.id === id)
+      if (block && block.reference !== undefined) {
+        block = _.find(blocks, { id: block.reference })
       }
       if (block === undefined) {
         return

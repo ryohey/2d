@@ -40,7 +40,7 @@ const graph: IGraph = {
       id: 10
     },
     {
-      link: 2,
+      reference: 2,
       x: 518,
       y: 111,
       id: 9

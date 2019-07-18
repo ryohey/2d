@@ -183,7 +183,7 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
 
   const openModalWithBlock = (id: BlockId) => {
     let block = blockStore.getBlock(id)
-    block = block.link ? blockStore.getBlock(block.link) : block
+    block = block.reference ? blockStore.getBlock(block.reference) : block
     setModalIsOpen(true)
     setEditingBlock(block)
   }
@@ -250,9 +250,9 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
 
   const onClickBlockMakeReference = (e: MouseEvent<any>, id: BlockId) => {
     const block = blockStore.getBlock(id)
-    const link = block.link || id
+    const link = block.reference || id
     blockStore.addBlock({
-      link,
+      reference: link,
       x: block.x,
       y: block.y + 180
     })

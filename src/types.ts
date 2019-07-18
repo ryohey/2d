@@ -1,13 +1,16 @@
 export type BlockId = number
 
-export interface IBlock {
+export interface ICodeBlock {
   id: BlockId
-  x: number
-  y: number
   name?: string
   code?: string
-  link?: BlockId
+  reference?: BlockId
   isAsync?: boolean
+}
+
+export interface IBlock extends ICodeBlock {
+  x: number
+  y: number
 }
 
 export interface DisplayBlock extends IBlock {

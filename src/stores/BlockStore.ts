@@ -3,6 +3,21 @@ import _ from "lodash"
 import { IEdge, IBlock, BlockId, DisplayBlock, PreviewEdge } from "../types"
 import { Optional } from "../helpers/typeHelper"
 import { createFunction } from "../helpers/functionHelper"
+import { createContext } from "react"
+
+export interface IBlockStore {
+  blocks: IBlock[]
+  edges: IEdge[]
+  previewBlock: DisplayBlock | null
+  previewEdge: PreviewEdge | null
+}
+
+export const BlockStoreContext = createContext<IBlockStore>({
+  blocks: [],
+  edges: [],
+  previewBlock: null,
+  previewEdge: null
+})
 
 export class BlockStore {
   @observable blocks: IBlock[] = []
@@ -22,10 +37,10 @@ export class BlockStore {
   */
   getDisplayBlock(id: BlockId): DisplayBlock {
     const block = this.getBlock(id)
-    const linked = block.link ? this.getBlock(block.link) : undefined
+    const linked = block.reference ? this.getBlock(block.reference) : undefined
     return {
       ...block,
-      linked: block.link !== undefined,
+      linked: block.reference !== undefined,
       name: (linked || block).name,
       isAsync: (linked || block).isAsync,
       code: linked ? "" : block.code,
@@ -51,8 +66,8 @@ export class BlockStore {
 
   getBlockInputLength(id: BlockId) {
     let block = this.getBlock(id)
-    if (block.link) {
-      block = this.getBlock(block.link)
+    if (block.reference) {
+      block = this.getBlock(block.reference)
     }
     const code = block.code
     if (code === undefined) {
@@ -76,7 +91,9 @@ export class BlockStore {
   removeBlock(id: BlockId) {
     this.blocks = _.reject(this.blocks, b => b.id === id)
     this.edges = _.reject(this.edges, e => e.toId === id || e.fromId === id)
-    this.blocks.filter(b => b.link === id).forEach(b => this.removeBlock(b.id))
+    this.blocks
+      .filter(b => b.reference === id)
+      .forEach(b => this.removeBlock(b.id))
   }
 
   lastBlockId() {

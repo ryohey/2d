@@ -1,6 +1,5 @@
 import React, { SFC, useState } from "react"
 import { observer } from "mobx-react"
-import Icon from "../components/Icon"
 import { Stage as _Stage } from "./Stage"
 import { BlockStore } from "../stores/BlockStore"
 import { CodeStore } from "../stores/CodeStore"

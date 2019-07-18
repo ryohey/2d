@@ -1,5 +1,5 @@
 import _ from "lodash"
-import { IBlock, IEdge, BlockId, ICodeBlock } from "../types"
+import { IEdge, BlockId, ICodeBlock } from "../types"
 import { notEmpty } from "./typeHelper"
 import { createFunction } from "./functionHelper"
 

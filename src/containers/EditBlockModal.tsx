@@ -1,4 +1,4 @@
-import React, { Component, FormEvent, MouseEvent, useState, SFC } from "react"
+import React, { FormEvent, SFC, useState } from "react"
 import Modal from "react-modal"
 import { BlockStore } from "../stores/BlockStore"
 import { IBlock } from "../types"

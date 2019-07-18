@@ -1,4 +1,4 @@
-import React, { SFC, useState, useEffect } from "react"
+import React, { SFC, useState } from "react"
 
 export interface DrawCanvasProps {
   draw: (ctx: CanvasRenderingContext2D) => void

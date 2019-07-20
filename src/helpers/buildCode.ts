@@ -8,6 +8,7 @@ import {
 } from "../types"
 import { foldTree } from "../topology/Tree"
 import { graphToTree } from "../topology/graphToTree"
+import { NodeId } from "../topology/Graph"
 
 interface IntermediateCode {
   code: string
@@ -15,17 +16,50 @@ interface IntermediateCode {
   isPromise: boolean
 }
 
+const getFuncVarName = (block: ICodeBlock) => {
+  const f = block.name ? `${block.name}` : `func${block.id}`
+  if ((window as any)[f] !== undefined) {
+    // グローバルな関数と名前が被らないようにする
+    return `__${f}`
+  }
+  return f
+}
+
+const makeCodeBlockCode = (
+  block: ICodeBlock,
+  nodeId: NodeId,
+  children: IntermediateCode[]
+): IntermediateCode => {
+  const funcName = getFuncVarName(block)
+  const varName = `${block.name}_out${nodeId}`
+
+  const promiseInputs = children.filter(c => c.isPromise).map(c => c.varName)
+  let code: string
+
+  if (promiseInputs.length === 0) {
+    code = `const ${varName} = ${funcName}(${children
+      .map(c => c.varName)
+      .join(", ")})`
+  } else {
+    code = `const ${varName} = Promise.all([
+      ${promiseInputs.join(", ")}
+    ]).then(result => {
+      const [${promiseInputs.map(i => i + "_p").join(", ")}] = result
+      return ${funcName}(${children
+      .map(c => (c.isPromise ? c.varName + "_p" : c.varName))
+      .join(", ")})
+    })`
+  }
+
+  return {
+    code: children.map(c => c.code).join("\n") + "\n" + code,
+    varName,
+    isPromise: block.isAsync || children.some(c => c.isPromise)
+  }
+}
+
 export default function buildCode(nodes: AnyNode[], edges: FuncEdge[]) {
   const trees = graphToTree(nodes, edges)
-
-  const getFuncVarName = (block: ICodeBlock) => {
-    const f = block.name ? `${block.name}` : `func${block.id}`
-    if ((window as any)[f] !== undefined) {
-      // グローバルな関数と名前が被らないようにする
-      return `__${f}`
-    }
-    return f
-  }
 
   const functionCodes = nodes
     .filter(isCodeBlock)
@@ -54,38 +88,16 @@ export default function buildCode(nodes: AnyNode[], edges: FuncEdge[]) {
   // create function calls
   const codes = trees.map(tree =>
     foldTree(tree, (node, children: IntermediateCode[]) => {
-      if (!(isCodeBlock(node.value) || isReferenceBlock(node.value))) {
-        throw new Error("node not supported")
-      }
-      const block = getOriginBlock(node.value)
-      const funcName = getFuncVarName(block)
-      const varName = `${block.name}_out${node.value.id}`
-
-      const promiseInputs = children
-        .filter(c => c.isPromise)
-        .map(c => c.varName)
-      let code: string
-
-      if (promiseInputs.length === 0) {
-        code = `const ${varName} = ${funcName}(${children
-          .map(c => c.varName)
-          .join(", ")})`
-      } else {
-        code = `const ${varName} = Promise.all([
-          ${promiseInputs.join(", ")}
-        ]).then(result => {
-          const [${promiseInputs.map(i => i + "_p").join(", ")}] = result
-          return ${funcName}(${children
-          .map(c => (c.isPromise ? c.varName + "_p" : c.varName))
-          .join(", ")})
-        })`
+      if (isCodeBlock(node.value)) {
+        return makeCodeBlockCode(node.value, node.value.id, children)
       }
 
-      return {
-        code: children.map(c => c.code).join("\n") + "\n" + code,
-        varName,
-        isPromise: block.isAsync || children.some(c => c.isPromise)
+      if (isReferenceBlock(node.value)) {
+        const originBlock = getOriginBlock(node.value)
+        return makeCodeBlockCode(originBlock, node.value.id, children)
       }
+
+      throw new Error("node not supported")
     })
   )
 

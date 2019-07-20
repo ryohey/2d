@@ -1,7 +1,6 @@
 import React, { SFC, MouseEvent, useState } from "react"
 import Icon from "../components/Icon"
 import "./Block.css"
-import _ from "lodash"
 import { DisplayBlock, NodeId } from "../types"
 import { DropDownMenu } from "../components/DropDownMenu"
 

@@ -25,8 +25,12 @@ export const isCodeBlock = (node: AnyNode): node is ICodeBlock =>
 export const isReferenceBlock = (node: AnyNode): node is IReferenceBlock =>
   node.type === "ReferenceBlock"
 
+export interface IVariable extends INode<"Variable"> {
+  value: any
+}
+
 export type AnyBlock = ICodeBlock | IReferenceBlock
-export type AnyNode = AnyBlock
+export type AnyNode = AnyBlock | IVariable
 
 export interface DisplayBlock extends ICodeBlock {
   linked: boolean

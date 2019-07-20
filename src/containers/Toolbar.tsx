@@ -8,13 +8,13 @@ export const Toolbar: SFC<{
   onClickHelp: () => void
 }> = ({ blockStore, onClickHelp }) => {
   const onClickPlay = () => {
-    const code = buildCode(blockStore.blocks, blockStore.edges)
+    const code = buildCode(blockStore.nodes, blockStore.edges)
     eval(code)
   }
 
   const onClickClear = () => {
     blockStore.edges = []
-    blockStore.blocks = []
+    blockStore.nodes = []
   }
 
   return (

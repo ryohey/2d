@@ -22,7 +22,7 @@ export const EditBlockModal: SFC<EditBlockModalProps> = ({
     e.preventDefault()
     e.stopPropagation()
     closeModal()
-    blockStore.updateBlock(modalInput.id, b => ({
+    blockStore.updateNode(modalInput.id, b => ({
       ...b,
       name: modalInput.name,
       code: modalInput.code,

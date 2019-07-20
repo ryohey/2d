@@ -10,7 +10,8 @@ import {
   isCodeBlock,
   isReferenceBlock,
   NodeId,
-  PreviewEdge
+  PreviewEdge,
+  AnyNode
 } from "../types"
 
 export interface IBlockStore {
@@ -28,18 +29,26 @@ export const BlockStoreContext = createContext<IBlockStore>({
 })
 
 export class BlockStore {
-  @observable blocks: AnyBlock[] = []
+  @observable nodes: AnyNode[] = []
   @observable edges: IEdge[] = []
 
   @observable previewBlock: DisplayBlock | null = null
   @observable previewEdge: PreviewEdge | null = null
 
+  getNode(id: NodeId): AnyNode {
+    return this.nodes.filter(b => b.id === id)[0]
+  }
+
   getBlock(id: NodeId): AnyBlock {
-    return this.blocks.filter(b => b.id === id)[0]
+    const node = this.getNode(id)
+    if (!(isCodeBlock(node) || isReferenceBlock(node))) {
+      throw new Error("node is not block")
+    }
+    return node
   }
 
   getOriginBlock(id: NodeId): ICodeBlock {
-    const block = this.getBlock(id)
+    const block = this.getNode(id)
     if (isReferenceBlock(block)) {
       return this.getOriginBlock(block.reference)
     }
@@ -55,7 +64,10 @@ export class BlockStore {
     link 先を取得しなくても表示できるように name プロパティなども追加する
   */
   getDisplayBlock(id: NodeId): DisplayBlock {
-    const block = this.getBlock(id)
+    const block = this.getNode(id)
+    if (!(isCodeBlock(block) || isReferenceBlock(block))) {
+      throw new Error(`id ${id} is not block`)
+    }
     const origin = this.getOriginBlock(id)
     return {
       id: block.id,
@@ -71,13 +83,13 @@ export class BlockStore {
   }
 
   allDisplayBlocks(): DisplayBlock[] {
-    return this.blocks.map(b => this.getDisplayBlock(b.id))
+    return this.nodes.map(b => this.getDisplayBlock(b.id))
   }
 
   @action
-  addBlock(block: AnyBlock) {
-    this.blocks = [
-      ...this.blocks,
+  addNode(block: AnyNode) {
+    this.nodes = [
+      ...this.nodes,
       {
         ...block,
         id: this.lastBlockId() + 1
@@ -86,9 +98,9 @@ export class BlockStore {
   }
 
   getBlockInputNames(id: NodeId) {
-    let block = this.getBlock(id)
+    let block = this.getNode(id)
     if (isReferenceBlock(block)) {
-      block = this.getBlock(block.reference)
+      block = this.getNode(block.reference)
     }
     if (!isCodeBlock(block)) {
       return []
@@ -100,7 +112,7 @@ export class BlockStore {
   getUniqueBlockName(requiredName: string = "") {
     let name = requiredName
     let count = 2
-    while (_.find(this.blocks, { name })) {
+    while (_.find(this.nodes, { name })) {
       name = `${requiredName}${count}`
       count++
     }
@@ -109,22 +121,22 @@ export class BlockStore {
 
   @action
   removeBlock(id: NodeId) {
-    this.blocks = _.reject(this.blocks, b => b.id === id)
+    this.nodes = _.reject(this.nodes, b => b.id === id)
     this.edges = _.reject(this.edges, e => e.toId === id || e.fromId === id)
-    this.blocks
+    this.nodes
       .filter(isReferenceBlock)
       .filter(b => b.reference === id)
       .forEach(b => this.removeBlock(b.id))
   }
 
   lastBlockId() {
-    const maxId = _.max(this.blocks.map(b => b.id))
+    const maxId = _.max(this.nodes.map(b => b.id))
     return maxId !== undefined ? maxId : -1
   }
 
   @action
-  updateBlock(id: NodeId, updater: (block: AnyBlock) => AnyBlock) {
-    this.blocks = this.blocks.map(b => {
+  updateNode(id: NodeId, updater: (node: AnyNode) => AnyNode) {
+    this.nodes = this.nodes.map(b => {
       if (b.id !== id) {
         return b
       }

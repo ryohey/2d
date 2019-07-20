@@ -3,9 +3,9 @@ import {
   IEdge,
   NodeId,
   ICodeBlock,
-  AnyBlock,
   isCodeBlock,
-  isReferenceBlock
+  isReferenceBlock,
+  AnyNode
 } from "../types"
 import { notEmpty } from "./typeHelper"
 import { createFunction } from "./functionHelper"
@@ -23,7 +23,7 @@ interface Calculatable {
   inputs: string[]
 }
 
-export default function buildCode(blocks: AnyBlock[], edges: IEdge[]) {
+export default function buildCode(nodes: AnyNode[], edges: IEdge[]) {
   function getFuncVarName(block: ICodeBlock) {
     const f = block.name ? `${block.name}` : `func${block.id}`
     if ((window as any)[f] !== undefined) {
@@ -33,7 +33,7 @@ export default function buildCode(blocks: AnyBlock[], edges: IEdge[]) {
     return f
   }
 
-  const func = blocks
+  const func = nodes
     .filter(isCodeBlock)
     .map(b => `const ${getFuncVarName(b)} = ${b.code}`)
     .join("\n")
@@ -43,7 +43,7 @@ export default function buildCode(blocks: AnyBlock[], edges: IEdge[]) {
 
   // { block id : 出力変数名 }
   const outputVarNames: { [index: number]: string | null } = _.fromPairs(
-    blocks.map(b => [b.id, null])
+    nodes.map(b => [b.id, null])
   )
   /**
     末端からグラフを走査してソースコードを生成する
@@ -60,20 +60,24 @@ export default function buildCode(blocks: AnyBlock[], edges: IEdge[]) {
           return null
         }
 
-        let block: AnyBlock | undefined = _.find(blocks, b => b.id === id)
-        if (block && isReferenceBlock(block)) {
-          block = _.find(blocks, { id: block.reference })
-        }
-
-        if (block === undefined) {
+        let node = _.find(nodes, b => b.id === id)
+        if (node === undefined) {
           return null
         }
 
-        if (!isCodeBlock(block)) {
+        if (node && isReferenceBlock(node)) {
+          node = _.find(nodes, { id: node.reference })
+
+          if (node === undefined) {
+            return null
+          }
+        }
+
+        if (!isCodeBlock(node)) {
           return null
         }
 
-        const code = block.code
+        const code = node.code
 
         const func = createFunction(code)
         const noInput = func.length === 0
@@ -123,16 +127,25 @@ export default function buildCode(blocks: AnyBlock[], edges: IEdge[]) {
     */
     terminals.forEach(t => {
       const { id, inputs } = t
-      let block: AnyBlock | undefined = _.find(blocks, b => b.id === id)
-      if (block && isReferenceBlock(block)) {
-        block = _.find(blocks, { id: block.reference })
-      }
-      if (block === undefined) {
+      let node = _.find(nodes, b => b.id === id)
+      if (node === undefined) {
         return
       }
-      if (!isCodeBlock(block)) {
+
+      if (node && isReferenceBlock(node)) {
+        node = _.find(nodes, { id: node.reference })
+
+        if (node === undefined) {
+          return null
+        }
+      }
+
+      if (!isCodeBlock(node)) {
         return
       }
+
+      const block = node
+
       const promiseInputs = inputs.filter(i => i.endsWith("_p"))
       const isAsync = block.isAsync || promiseInputs.length > 0
       const varName =

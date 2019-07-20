@@ -15,12 +15,12 @@ import { Toolbar } from "./Toolbar"
 const blockStore = new BlockStore()
 const codeStore = new CodeStore()
 
-exampleBlocks.nodes.forEach(b => blockStore.addBlock(b))
+exampleBlocks.nodes.forEach(b => blockStore.addNode(b))
 blockStore.edges = exampleBlocks.edges
 codeStore.codes = exampleCodes()
 
 function _CodeOutput({ blockStore }: { blockStore: BlockStore }) {
-  const code = buildCode(blockStore.blocks, blockStore.edges)
+  const code = buildCode(blockStore.nodes, blockStore.edges)
   return (
     <div className="CodeOutput">
       <pre>{code}</pre>

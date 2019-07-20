@@ -107,14 +107,14 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
     const { previewBlock } = blockStore
     if (previewBlock) {
       blockStore.previewBlock = null
-      blockStore.addBlock(previewBlock)
+      blockStore.addNode(previewBlock)
     }
   }
 
   const onDoubleClickStage = (e: MouseEvent<any>) => {
     setClick(null)
     const bounds = e.currentTarget.getBoundingClientRect()
-    blockStore.addBlock({
+    blockStore.addNode({
       type: "CodeBlock",
       x: e.clientX - bounds.left,
       y: e.clientY - bounds.top,
@@ -154,7 +154,7 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
           y: e.clientY - startOffset.y
         }
 
-        blockStore.updateBlock(click.id, b => ({
+        blockStore.updateNode(click.id, b => ({
           ...b,
           x: start.x + delta.x,
           y: start.y + delta.y
@@ -255,7 +255,7 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
 
   const onClickBlockDupulicate = (e: MouseEvent<any>, id: NodeId) => {
     const block = blockStore.getBlock(id)
-    blockStore.addBlock({
+    blockStore.addNode({
       ...block,
       y: block.y + 180
     })
@@ -264,7 +264,7 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
   const onClickBlockMakeReference = (e: MouseEvent<any>, id: NodeId) => {
     const block = blockStore.getBlock(id)
     const reference = isReferenceBlock(block) ? block.reference : id
-    blockStore.addBlock({
+    blockStore.addNode({
       type: "ReferenceBlock",
       reference,
       x: block.x,

@@ -5,26 +5,21 @@ import {
   ICodeBlock,
   isCodeBlock,
   isReferenceBlock,
-  AnyNode
+  AnyNode,
+  AnyBlock
 } from "../types"
-import { notEmpty } from "./typeHelper"
-import { createFunction } from "./functionHelper"
+import { makeTrees, foldTree } from "./Tree"
 
-function wrapPromiseAll(values: string[]) {
-  if (values.length === 1) {
-    return `${values[0]}`
-  }
-  return `Promise.all([${values.join(", ")}])`
-}
-
-// 出力が未計算で入力が揃っている（もしくは無い）もの
-interface Calculatable {
-  id: NodeId
-  inputs: string[]
+interface IntermediateCode {
+  code: string
+  varName: string
+  isPromise: boolean
 }
 
 export default function buildCode(nodes: AnyNode[], edges: IEdge[]) {
-  function getFuncVarName(block: ICodeBlock) {
+  const trees = makeTrees(nodes, edges)
+
+  const getFuncVarName = (block: ICodeBlock) => {
     const f = block.name ? `${block.name}` : `func${block.id}`
     if ((window as any)[f] !== undefined) {
       // グローバルな関数と名前が被らないようにする
@@ -33,143 +28,71 @@ export default function buildCode(nodes: AnyNode[], edges: IEdge[]) {
     return f
   }
 
-  const func = nodes
+  const functionCodes = nodes
     .filter(isCodeBlock)
     .map(b => `const ${getFuncVarName(b)} = ${b.code}`)
     .join("\n")
 
-  let outputIndex = 0
-  let procs: string[] = []
-
-  // { block id : 出力変数名 }
-  const outputVarNames: { [index: number]: string | null } = _.fromPairs(
-    nodes.map(b => [b.id, null])
-  )
-  /**
-    末端からグラフを走査してソースコードを生成する
-    入力が揃っているノードの出力変数の名前を作っていく
-  */
-  while (true) {
-    // 出力が未計算で入力が揃っている（もしくは無い）ものを探す
-    const terminals: Calculatable[] = _.entries(outputVarNames)
-      .map(e => {
-        const id = parseInt(e[0])
-        const computed = e[1] !== null
-        if (computed) {
-          // 出力が計算済み
-          return null
-        }
-
-        let node = _.find(nodes, b => b.id === id)
-        if (node === undefined) {
-          return null
-        }
-
-        if (node && isReferenceBlock(node)) {
-          node = _.find(nodes, { id: node.reference })
-
-          if (node === undefined) {
-            return null
-          }
-        }
-
-        if (!isCodeBlock(node)) {
-          return null
-        }
-
-        const code = node.code
-
-        const func = createFunction(code)
-        const noInput = func.length === 0
-        if (noInput) {
-          // 入力が無い
-          return {
-            id,
-            inputs: []
-          }
-        }
-
-        const inputs = _.range(func.length).map(i => {
-          const edge = _.find(edges, e => e.toId === id && e.toIndex === i)
-          if (edge) {
-            return edge.fromId
-          }
-          return null
-        })
-        const inputVarNames = inputs.map(i =>
-          i !== null ? outputVarNames[i] : "undefined"
-        )
-        const allInputComputed = _.every(inputVarNames, n => n !== null)
-
-        if (!allInputComputed) {
-          // 入力が揃っていない
-          return null
-        }
-
-        return {
-          id,
-          inputs: inputVarNames.filter(notEmpty)
-        }
-      })
-      .filter(notEmpty)
-
-    if (terminals.length === 0) {
-      break
+  const getOriginBlock = (block: AnyBlock): ICodeBlock => {
+    if (isCodeBlock(block)) {
+      return block
     }
-
-    /**
-    const out6_p = Promise.all([
-      out4_p,
-      out5_p
-    ]).then(([out4, out5]) =>
-      add(out4, out5)
-    )
-    */
-    terminals.forEach(t => {
-      const { id, inputs } = t
-      let node = _.find(nodes, b => b.id === id)
-      if (node === undefined) {
-        return
+    if (isReferenceBlock(block)) {
+      const originNodes = nodes.filter(n => n.id === block.reference)
+      if (originNodes.length === 0) {
+        throw new Error("reference is broken")
       }
-
-      if (node && isReferenceBlock(node)) {
-        node = _.find(nodes, { id: node.reference })
-
-        if (node === undefined) {
-          return null
-        }
+      if (originNodes.length > 1) {
+        throw new Error("There are multiple origin nodes")
       }
-
-      if (!isCodeBlock(node)) {
-        return
+      const node = originNodes[0]
+      if (isCodeBlock(node)) {
+        return node
       }
-
-      const block = node
-
-      const promiseInputs = inputs.filter(i => i.endsWith("_p"))
-      const isAsync = block.isAsync || promiseInputs.length > 0
-      const varName =
-        `${block.name ? block.name : "block"}_out${outputIndex}` +
-        (isAsync ? "_p" : "")
-      outputIndex++
-      outputVarNames[id] = varName
-      const funcName = getFuncVarName(block)
-      if (promiseInputs.length > 0) {
-        const resultNames = promiseInputs.map(i => i.split("_p")[0])
-        const promise = wrapPromiseAll(promiseInputs)
-        const params = inputs.map(i => i.split("_p")[0]).join(", ") // _p を除去する
-        const result =
-          resultNames.length === 1
-            ? `${resultNames}`
-            : `([${resultNames.join(", ")}])`
-        procs.push(`const ${varName} = ${promise}.then(${result} =>
-  ${funcName}(${params})
-)`)
-      } else {
-        procs.push(`const ${varName} = ${funcName}(${inputs.join(", ")})`)
+      if (isReferenceBlock(node)) {
+        return getOriginBlock(node)
       }
-    })
+      throw new Error("Origin node is not block")
+    }
+    throw new Error("Unsupported block type")
   }
 
-  return `${func}\n\n${procs.join("\n")}`
+  const codes = trees.map(tree =>
+    foldTree(tree, (node, children: IntermediateCode[]) => {
+      if (!(isCodeBlock(node.value) || isReferenceBlock(node.value))) {
+        throw new Error("node not supported")
+      }
+      const block = getOriginBlock(node.value)
+      const funcName = getFuncVarName(block)
+      const varName = `${block.name}_out${node.value.id}`
+
+      const promiseInputs = children
+        .filter(c => c.isPromise)
+        .map(c => c.varName)
+      let code: string
+
+      if (promiseInputs.length === 0) {
+        code = `const ${varName} = ${funcName}(${children
+          .map(c => c.varName)
+          .join(", ")})`
+      } else {
+        code = `const ${varName} = Promise.all([
+          ${promiseInputs.join(", ")}
+        ]).then(result => {
+          const [${promiseInputs.map(i => i + "_p").join(", ")}] = result
+          return ${funcName}(${children
+          .map(c => (c.isPromise ? c.varName + "_p" : c.varName))
+          .join(", ")})
+        })`
+      }
+
+      return {
+        code: children.map(c => c.code).join("\n") + "\n" + code,
+        varName,
+        isPromise: block.isAsync || children.some(c => c.isPromise)
+      }
+    })
+  )
+
+  return functionCodes + "\n" + codes.map(c => c.code).join("\n")
 }

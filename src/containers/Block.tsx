@@ -6,15 +6,33 @@ import { DisplayBlock, BlockId } from "../types"
 import { DropDownMenu } from "../components/DropDownMenu"
 
 export interface PortProps {
-  type: string
+  name: string
   onMouseDown: (e: MouseEvent<any>) => void
   onMouseUp: (e: MouseEvent<any>) => void
 }
 
-const Port: SFC<PortProps> = ({ type, onMouseDown, onMouseUp }) => {
+const LeftPort: SFC<PortProps> = ({ name, onMouseDown, onMouseUp }) => {
   return (
-    <div className="Port" onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
-      <Icon name={`arrow-${type}-drop-circle-outline`} />
+    <div
+      className="Port LeftPort"
+      onMouseDown={onMouseDown}
+      onMouseUp={onMouseUp}
+    >
+      <Icon name="arrow-right-drop-circle-outline" />
+      <div className="label">{name}</div>
+    </div>
+  )
+}
+
+const RightPort: SFC<PortProps> = ({ name, onMouseDown, onMouseUp }) => {
+  return (
+    <div
+      className="Port RightPort"
+      onMouseDown={onMouseDown}
+      onMouseUp={onMouseUp}
+    >
+      <div className="label">{name}</div>
+      <Icon name="arrow-right-drop-circle-outline" />
     </div>
   )
 }
@@ -45,7 +63,7 @@ export const Block: SFC<BlockProps> = ({
   linked,
   isAsync,
   isPreview,
-  inputLength,
+  inputNames,
   containerRef,
   onMouseDownHeader = NOP,
   onDoubleClickHeader = NOP,
@@ -115,9 +133,9 @@ export const Block: SFC<BlockProps> = ({
       )}
       <div className="ports">
         <div className="inputs">
-          {_.range(inputLength).map(i => (
-            <Port
-              type="right"
+          {inputNames.map((name, i) => (
+            <LeftPort
+              name={name}
               key={i}
               onMouseDown={e => onMouseDownInput(e, id, i)}
               onMouseUp={e => onMouseUpInput(e, id, i)}
@@ -125,8 +143,8 @@ export const Block: SFC<BlockProps> = ({
           ))}
         </div>
         <div className="outputs">
-          <Port
-            type="right"
+          <RightPort
+            name=""
             onMouseDown={e => onMouseDownOutput(e, id)}
             onMouseUp={e => onMouseUpOutput(e, id)}
           />

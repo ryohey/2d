@@ -287,7 +287,7 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
             onClickRemove={onClickBlockRemove}
             onClickMakeReference={onClickBlockMakeReference}
             {...b}
-            inputLength={b.inputLength}
+            inputNames={b.inputNames}
             name={b.name}
             code={b.code}
             linked={b.linked}

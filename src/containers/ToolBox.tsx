@@ -24,7 +24,7 @@ export const ToolBox: SFC<{ blockStore: BlockStore; codeStore: CodeStore }> = ({
             ...c,
             x: e.clientX - bounds.width,
             y: e.clientY - bounds.top,
-            inputLength: c.inputLength
+            inputNames: c.inputLength
           }
         }}
       >

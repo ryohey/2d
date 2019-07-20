@@ -2,7 +2,7 @@ import { action, observable } from "mobx"
 import _ from "lodash"
 import { IEdge, IBlock, BlockId, DisplayBlock, PreviewEdge } from "../types"
 import { Optional } from "../helpers/typeHelper"
-import { createFunction } from "../helpers/functionHelper"
+import { createFunction, getParamNames } from "../helpers/functionHelper"
 import { createContext } from "react"
 
 export interface IBlockStore {
@@ -44,7 +44,7 @@ export class BlockStore {
       name: (linked || block).name,
       isAsync: (linked || block).isAsync,
       code: linked ? "" : block.code,
-      inputLength: this.getBlockInputLength(id)
+      inputNames: this.getBlockInputNames(id)
     }
   }
 
@@ -64,17 +64,17 @@ export class BlockStore {
     ]
   }
 
-  getBlockInputLength(id: BlockId) {
+  getBlockInputNames(id: BlockId) {
     let block = this.getBlock(id)
     if (block.reference) {
       block = this.getBlock(block.reference)
     }
     const code = block.code
     if (code === undefined) {
-      return 0
+      return []
     }
     const func = createFunction(code)
-    return func.length
+    return getParamNames(func)
   }
 
   getUniqueBlockName(requiredName: string = "") {

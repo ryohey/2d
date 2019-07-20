@@ -15,7 +15,7 @@ export interface IBlock extends ICodeBlock {
 
 export interface DisplayBlock extends IBlock {
   linked: boolean
-  inputLength: number
+  inputNames: string[]
 }
 
 export interface IPoint {

@@ -73,6 +73,22 @@
   text-align: right;
 }
 
+.Block .Port {
+  display: flex;
+}
+
+.Block .Port.RightPort {
+  justify-content: flex-end;
+}
+
+.Block .Port.LeftPort .Icon {
+  margin-right: 0.25em;
+}
+
+.Block .Port.LeftPort .label {
+  font-size: 0.9rem;
+}
+
 .Block .Port:hover {
   color: var(--highlighted-text-color);
 }

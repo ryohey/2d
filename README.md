@@ -22,7 +22,7 @@ The graphical interface for the Flow-Based Programming.
 - Class `unimplemented`
 - Function block composition `unimplemented`
 - Type checking `unimplemented`
-- Show parameter name `unimplemented`
+- Show parameter name
 - Incremental search for blocks `unimplemented`
 - Align block layout `unimplemented`
 - Nested graphs `unimplemented`

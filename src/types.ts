@@ -7,20 +7,28 @@ export interface INode<T extends string> {
 
 export interface ICodeBlock extends INode<"CodeBlock"> {
   id: NodeId
-  name?: string
-  code?: string
-  reference?: NodeId
+  name: string
+  code: string
   isAsync?: boolean
-}
-
-export interface IBlock extends ICodeBlock {
   x: number
   y: number
 }
 
-export type AnyNode = IBlock
+export interface IReferenceBlock extends INode<"ReferenceBlock"> {
+  reference: NodeId
+  x: number
+  y: number
+}
 
-export interface DisplayBlock extends IBlock {
+export const isCodeBlock = (node: AnyNode): node is ICodeBlock =>
+  node.type === "CodeBlock"
+export const isReferenceBlock = (node: AnyNode): node is IReferenceBlock =>
+  node.type === "ReferenceBlock"
+
+export type AnyBlock = ICodeBlock | IReferenceBlock
+export type AnyNode = AnyBlock
+
+export interface DisplayBlock extends ICodeBlock {
   linked: boolean
   inputNames: string[]
 }

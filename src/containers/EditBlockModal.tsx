@@ -1,14 +1,14 @@
 import React, { FormEvent, SFC, useState } from "react"
 import Modal from "react-modal"
 import { BlockStore } from "../stores/BlockStore"
-import { IBlock } from "../types"
+import { ICodeBlock } from "../types"
 
-export type ModalInput = Pick<IBlock, "id" | "name" | "code" | "isAsync">
+export type ModalInput = Pick<ICodeBlock, "id" | "name" | "code" | "isAsync">
 
 export interface EditBlockModalProps {
   closeModal: () => void
   blockStore: BlockStore
-  block: IBlock
+  block: ICodeBlock
 }
 
 export const EditBlockModal: SFC<EditBlockModalProps> = ({

@@ -1,5 +1,12 @@
 import _ from "lodash"
-import { IEdge, NodeId, ICodeBlock } from "../types"
+import {
+  IEdge,
+  NodeId,
+  ICodeBlock,
+  AnyBlock,
+  isCodeBlock,
+  isReferenceBlock
+} from "../types"
 import { notEmpty } from "./typeHelper"
 import { createFunction } from "./functionHelper"
 
@@ -16,7 +23,7 @@ interface Calculatable {
   inputs: string[]
 }
 
-export default function buildCode(blocks: ICodeBlock[], edges: IEdge[]) {
+export default function buildCode(blocks: AnyBlock[], edges: IEdge[]) {
   function getFuncVarName(block: ICodeBlock) {
     const f = block.name ? `${block.name}` : `func${block.id}`
     if ((window as any)[f] !== undefined) {
@@ -27,7 +34,7 @@ export default function buildCode(blocks: ICodeBlock[], edges: IEdge[]) {
   }
 
   const func = blocks
-    .filter(b => b.code)
+    .filter(isCodeBlock)
     .map(b => `const ${getFuncVarName(b)} = ${b.code}`)
     .join("\n")
 
@@ -53,8 +60,8 @@ export default function buildCode(blocks: ICodeBlock[], edges: IEdge[]) {
           return null
         }
 
-        let block: ICodeBlock | undefined = _.find(blocks, b => b.id === id)
-        if (block && block.reference !== undefined) {
+        let block: AnyBlock | undefined = _.find(blocks, b => b.id === id)
+        if (block && isReferenceBlock(block)) {
           block = _.find(blocks, { id: block.reference })
         }
 
@@ -62,11 +69,11 @@ export default function buildCode(blocks: ICodeBlock[], edges: IEdge[]) {
           return null
         }
 
-        const code = block.code
-
-        if (code === undefined) {
+        if (!isCodeBlock(block)) {
           return null
         }
+
+        const code = block.code
 
         const func = createFunction(code)
         const noInput = func.length === 0
@@ -116,11 +123,14 @@ export default function buildCode(blocks: ICodeBlock[], edges: IEdge[]) {
     */
     terminals.forEach(t => {
       const { id, inputs } = t
-      let block: ICodeBlock | undefined = _.find(blocks, b => b.id === id)
-      if (block && block.reference !== undefined) {
+      let block: AnyBlock | undefined = _.find(blocks, b => b.id === id)
+      if (block && isReferenceBlock(block)) {
         block = _.find(blocks, { id: block.reference })
       }
       if (block === undefined) {
+        return
+      }
+      if (!isCodeBlock(block)) {
         return
       }
       const promiseInputs = inputs.filter(i => i.endsWith("_p"))

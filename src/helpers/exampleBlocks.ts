@@ -45,7 +45,7 @@ const graph: IGraph = {
       id: 10
     },
     {
-      type: "CodeBlock",
+      type: "ReferenceBlock",
       reference: 2,
       x: 518,
       y: 111,

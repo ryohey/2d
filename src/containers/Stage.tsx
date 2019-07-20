@@ -1,6 +1,12 @@
 import React, { MouseEvent, useState, SFC } from "react"
 import { Block } from "./Block"
-import { NodeId, IPoint, IBlock } from "../types"
+import {
+  NodeId,
+  IPoint,
+  ICodeBlock,
+  isReferenceBlock,
+  isCodeBlock
+} from "../types"
 import { EditBlockModal } from "./EditBlockModal"
 import { BlockStore } from "../stores/BlockStore"
 import { DrawCanvas } from "../components/DrawCanvas"
@@ -18,7 +24,7 @@ export interface StageProps {
 
 export interface StageState {
   modalIsOpen: boolean
-  editingBlock: IBlock | null
+  editingBlock: ICodeBlock | null
 }
 
 export const Stage: SFC<StageProps> = ({ blockStore }) => {
@@ -26,7 +32,7 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
   const [container, setContainer] = useState<HTMLElement | null>(null)
   const [click, setClick] = useState<ClickData | null>(null)
   const [modalIsOpen, setModalIsOpen] = useState<Boolean>(false)
-  const [editingBlock, setEditingBlock] = useState<IBlock | null>(null)
+  const [editingBlock, setEditingBlock] = useState<ICodeBlock | null>(null)
   const [blockElements, setBlockElements] = useState<{
     [id: number]: HTMLElement | undefined
   }>({})
@@ -113,7 +119,9 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
       x: e.clientX - bounds.left,
       y: e.clientY - bounds.top,
       name: "func",
-      code: `x => x`
+      code: `x => x`,
+      isAsync: false,
+      id: -1
     })
   }
 
@@ -184,9 +192,13 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
 
   const openModalWithBlock = (id: NodeId) => {
     let block = blockStore.getBlock(id)
-    block = block.reference ? blockStore.getBlock(block.reference) : block
-    setModalIsOpen(true)
-    setEditingBlock(block)
+    block = isReferenceBlock(block)
+      ? blockStore.getBlock(block.reference)
+      : block
+    if (isCodeBlock(block)) {
+      setModalIsOpen(true)
+      setEditingBlock(block)
+    }
   }
 
   const onDoubleClickBlockHeader = (e: MouseEvent<any>, id: NodeId) => {
@@ -251,12 +263,13 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
 
   const onClickBlockMakeReference = (e: MouseEvent<any>, id: NodeId) => {
     const block = blockStore.getBlock(id)
-    const link = block.reference || id
+    const reference = isReferenceBlock(block) ? block.reference : id
     blockStore.addBlock({
-      type: "CodeBlock",
-      reference: link,
+      type: "ReferenceBlock",
+      reference,
       x: block.x,
-      y: block.y + 180
+      y: block.y + 180,
+      id: -1
     })
   }
 

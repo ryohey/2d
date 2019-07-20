@@ -1,10 +1,10 @@
 import React, { SFC, useState } from "react"
 import { observer } from "mobx-react"
 import { Stage as _Stage } from "./Stage"
-import { BlockStore } from "../stores/BlockStore"
+import { GraphStore } from "../stores/GraphStore"
 import { CodeStore } from "../stores/CodeStore"
 import buildCode from "../helpers/buildCode"
-import exampleBlocks from "../helpers/exampleBlocks"
+import { exampleGraph } from "../helpers/exampleGraph"
 import exampleCodes from "../helpers/exampleCodes"
 
 import "./App.css"
@@ -12,15 +12,15 @@ import { HelpModal } from "../components/HelpModal"
 import { ToolBox } from "./ToolBox"
 import { Toolbar } from "./Toolbar"
 
-const blockStore = new BlockStore()
+const graphStore = new GraphStore()
 const codeStore = new CodeStore()
 
-exampleBlocks.nodes.forEach(b => blockStore.addNode(b))
-blockStore.edges = exampleBlocks.edges
+exampleGraph.nodes.forEach(b => graphStore.addNode(b))
+graphStore.edges = exampleGraph.edges
 codeStore.codes = exampleCodes()
 
-function _CodeOutput({ blockStore }: { blockStore: BlockStore }) {
-  const code = buildCode(blockStore.nodes, blockStore.edges)
+function _CodeOutput({ graphStore }: { graphStore: GraphStore }) {
+  const code = buildCode(graphStore.nodes, graphStore.edges)
   return (
     <div className="CodeOutput">
       <pre>{code}</pre>
@@ -37,14 +37,14 @@ export const App: SFC<{}> = () => {
   return (
     <div className="App">
       <Toolbar
-        blockStore={blockStore}
+        graphStore={graphStore}
         onClickHelp={() => setIsHelpModalOpen(true)}
       />
       <div className="main">
-        <ToolBox blockStore={blockStore} codeStore={codeStore} />
+        <ToolBox graphStore={graphStore} codeStore={codeStore} />
         <div className="content">
-          <Stage blockStore={blockStore} />
-          <CodeOutput blockStore={blockStore} />
+          <Stage graphStore={graphStore} />
+          <CodeOutput graphStore={graphStore} />
         </div>
       </div>
       <HelpModal

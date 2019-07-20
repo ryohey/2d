@@ -1,9 +1,9 @@
 import {
-  ICodeBlock,
-  isCodeBlock,
-  isReferenceBlock,
+  IFuncNode,
+  isFuncNode,
+  isReferenceFuncNode,
   AnyNode,
-  AnyBlock,
+  AnyFuncNode,
   FuncEdge
 } from "../types"
 import { foldTree } from "../topology/Tree"
@@ -16,8 +16,8 @@ interface IntermediateCode {
   isPromise: boolean
 }
 
-const getFuncVarName = (block: ICodeBlock) => {
-  const f = block.name ? `${block.name}` : `func${block.id}`
+const getFuncVarName = (node: IFuncNode) => {
+  const f = node.name ? `${node.name}` : `func${node.id}`
   if ((window as any)[f] !== undefined) {
     // グローバルな関数と名前が被らないようにする
     return `__${f}`
@@ -25,13 +25,13 @@ const getFuncVarName = (block: ICodeBlock) => {
   return f
 }
 
-const makeCodeBlockCode = (
-  block: ICodeBlock,
+const makeFuncNodeCode = (
+  node: IFuncNode,
   nodeId: NodeId,
   children: IntermediateCode[]
 ): IntermediateCode => {
-  const funcName = getFuncVarName(block)
-  const varName = `${block.name}_out${nodeId}`
+  const funcName = getFuncVarName(node)
+  const varName = `${node.name}_out${nodeId}`
 
   const promiseInputs = children.filter(c => c.isPromise).map(c => c.varName)
   let code: string
@@ -54,7 +54,7 @@ const makeCodeBlockCode = (
   return {
     code: children.map(c => c.code).join("\n") + "\n" + code,
     varName,
-    isPromise: block.isAsync || children.some(c => c.isPromise)
+    isPromise: node.isAsync || children.some(c => c.isPromise)
   }
 }
 
@@ -62,39 +62,39 @@ export default function buildCode(nodes: AnyNode[], edges: FuncEdge[]) {
   const trees = graphToTree(nodes, edges)
 
   const functionCodes = nodes
-    .filter(isCodeBlock)
-    .map(block => {
-      const varName = getFuncVarName(block)
-      return `const ${varName} = ${block.code}`
+    .filter(isFuncNode)
+    .map(node => {
+      const varName = getFuncVarName(node)
+      return `const ${varName} = ${node.code}`
     })
     .join("\n")
 
-  const getOriginBlock = (block: AnyBlock): ICodeBlock => {
-    switch (block.type) {
-      case "CodeBlock":
-        return block
-      case "ReferenceBlock":
-        const node = nodes.filter(n => n.id === block.reference)[0]
-        if (isCodeBlock(node)) {
-          return node
+  const getOriginNode = (node: AnyFuncNode): IFuncNode => {
+    switch (node.type) {
+      case "FuncNode":
+        return node
+      case "ReferenceFuncNode":
+        const originNode = nodes.filter(n => n.id === node.reference)[0]
+        if (isFuncNode(originNode)) {
+          return originNode
         }
-        if (isReferenceBlock(node)) {
-          return getOriginBlock(node)
+        if (isReferenceFuncNode(originNode)) {
+          return getOriginNode(originNode)
         }
-        throw new Error("Origin node is not block")
+        throw new Error("Origin node is not FuncNode")
     }
   }
 
   // create function calls
   const codes = trees.map(tree =>
     foldTree(tree, (node, children: IntermediateCode[]) => {
-      if (isCodeBlock(node.value)) {
-        return makeCodeBlockCode(node.value, node.value.id, children)
+      if (isFuncNode(node.value)) {
+        return makeFuncNodeCode(node.value, node.value.id, children)
       }
 
-      if (isReferenceBlock(node.value)) {
-        const originBlock = getOriginBlock(node.value)
-        return makeCodeBlockCode(originBlock, node.value.id, children)
+      if (isReferenceFuncNode(node.value)) {
+        const originNode = getOriginNode(node.value)
+        return makeFuncNodeCode(originNode, node.value.id, children)
       }
 
       throw new Error("node not supported")

@@ -1,10 +1,10 @@
 import { IGraph } from "../topology/Graph"
 import { AnyNode, FuncEdge } from "../types"
 
-const graph: IGraph<AnyNode, FuncEdge> = {
+export const exampleGraph: IGraph<AnyNode, FuncEdge> = {
   nodes: [
     {
-      type: "CodeBlock",
+      type: "FuncNode",
       name: "constant",
       code: "() => 1",
       x: 44,
@@ -12,7 +12,7 @@ const graph: IGraph<AnyNode, FuncEdge> = {
       id: 0
     },
     {
-      type: "CodeBlock",
+      type: "FuncNode",
       name: "time",
       code: "() => 1000",
       x: 49,
@@ -20,7 +20,7 @@ const graph: IGraph<AnyNode, FuncEdge> = {
       id: 8
     },
     {
-      type: "CodeBlock",
+      type: "FuncNode",
       name: "delay",
       code:
         "(value, delay) => new Promise((resolve, reject) => {\n  setTimeout(() => resolve(value), delay)\n})",
@@ -30,7 +30,7 @@ const graph: IGraph<AnyNode, FuncEdge> = {
       id: 7
     },
     {
-      type: "CodeBlock",
+      type: "FuncNode",
       name: "constant2",
       code: "() => 2",
       x: 367,
@@ -38,7 +38,7 @@ const graph: IGraph<AnyNode, FuncEdge> = {
       id: 1
     },
     {
-      type: "CodeBlock",
+      type: "FuncNode",
       name: "time2",
       code: "() => 2000",
       x: 377,
@@ -46,14 +46,14 @@ const graph: IGraph<AnyNode, FuncEdge> = {
       id: 10
     },
     {
-      type: "ReferenceBlock",
+      type: "ReferenceFuncNode",
       reference: 2,
       x: 518,
       y: 111,
       id: 9
     },
     {
-      type: "CodeBlock",
+      type: "FuncNode",
       id: 11,
       x: 650.6666564941406,
       y: 26,
@@ -61,7 +61,7 @@ const graph: IGraph<AnyNode, FuncEdge> = {
       code: "(a, b) => a + b"
     },
     {
-      type: "CodeBlock",
+      type: "FuncNode",
       name: "popup",
       code: "str => alert(str)",
       x: 815,
@@ -107,5 +107,3 @@ const graph: IGraph<AnyNode, FuncEdge> = {
     }
   ]
 }
-
-export default graph

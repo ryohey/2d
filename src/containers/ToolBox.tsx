@@ -1,10 +1,10 @@
 import React, { SFC } from "react"
-import { BlockStore } from "../stores/BlockStore"
+import { GraphStore } from "../stores/GraphStore"
 import { CodeStore } from "../stores/CodeStore"
 import Icon from "../components/Icon"
 
-export const ToolBox: SFC<{ blockStore: BlockStore; codeStore: CodeStore }> = ({
-  blockStore,
+export const ToolBox: SFC<{ graphStore: GraphStore; codeStore: CodeStore }> = ({
+  graphStore,
   codeStore
 }) => (
   <div className="ToolBox">
@@ -20,7 +20,7 @@ export const ToolBox: SFC<{ blockStore: BlockStore; codeStore: CodeStore }> = ({
             return
           }
           const bounds = parent.getBoundingClientRect()
-          blockStore.previewBlock = {
+          graphStore.previewNode = {
             ...c,
             x: e.clientX - bounds.width,
             y: e.clientY - bounds.top,

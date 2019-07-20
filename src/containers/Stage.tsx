@@ -1,8 +1,8 @@
 import React, { MouseEvent, useState, SFC } from "react"
-import { Block } from "./Block"
-import { IPoint, ICodeBlock, isReferenceBlock, isCodeBlock } from "../types"
-import { EditBlockModal } from "./EditBlockModal"
-import { BlockStore } from "../stores/BlockStore"
+import { FuncNode } from "./FuncNode"
+import { IPoint, IFuncNode, isReferenceFuncNode, isFuncNode } from "../types"
+import { EditFuncModal } from "./EditFuncModal"
+import { GraphStore } from "../stores/GraphStore"
 import { DrawCanvas } from "../components/DrawCanvas"
 import { NodeId } from "../topology/Graph"
 
@@ -14,20 +14,20 @@ interface ClickData {
 }
 
 export interface StageProps {
-  blockStore: BlockStore
+  graphStore: GraphStore
 }
 
 export interface StageState {
   modalIsOpen: boolean
-  editingBlock: ICodeBlock | null
+  editingBlock: IFuncNode | null
 }
 
-export const Stage: SFC<StageProps> = ({ blockStore }) => {
-  const { previewBlock } = blockStore
+export const Stage: SFC<StageProps> = ({ graphStore }) => {
+  const { previewNode } = graphStore
   const [container, setContainer] = useState<HTMLElement | null>(null)
   const [click, setClick] = useState<ClickData | null>(null)
   const [modalIsOpen, setModalIsOpen] = useState<Boolean>(false)
-  const [editingBlock, setEditingBlock] = useState<ICodeBlock | null>(null)
+  const [editingBlock, setEditingBlock] = useState<IFuncNode | null>(null)
   const [blockElements, setBlockElements] = useState<{
     [id: number]: HTMLElement | undefined
   }>({})
@@ -61,7 +61,7 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
   }
 
   const renderEdges = (ctx: CanvasRenderingContext2D) => {
-    const { edges, previewEdge } = blockStore
+    const { edges, previewEdge } = graphStore
     const { canvas } = ctx
 
     const renderCurve = (from: IPoint, to: IPoint) => {
@@ -97,20 +97,20 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
 
   const onMouseUpStage = () => {
     setClick(null)
-    blockStore.previewEdge = null
+    graphStore.previewEdge = null
 
-    const { previewBlock } = blockStore
-    if (previewBlock) {
-      blockStore.previewBlock = null
-      blockStore.addNode(previewBlock)
+    const { previewNode } = graphStore
+    if (previewNode) {
+      graphStore.previewNode = null
+      graphStore.addNode(previewNode)
     }
   }
 
   const onDoubleClickStage = (e: MouseEvent<any>) => {
     setClick(null)
     const bounds = e.currentTarget.getBoundingClientRect()
-    blockStore.addNode({
-      type: "CodeBlock",
+    graphStore.addNode({
+      type: "FuncNode",
       x: e.clientX - bounds.left,
       y: e.clientY - bounds.top,
       name: "func",
@@ -121,10 +121,10 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
   }
 
   const onMouseMoveStage = (e: MouseEvent<any>) => {
-    if (blockStore.previewBlock) {
+    if (graphStore.previewNode) {
       const bounds = e.currentTarget.getBoundingClientRect()
-      blockStore.previewBlock = {
-        ...blockStore.previewBlock,
+      graphStore.previewNode = {
+        ...graphStore.previewNode,
         x: e.clientX - bounds.left,
         y: e.clientY - bounds.top
       }
@@ -149,7 +149,7 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
           y: e.clientY - startOffset.y
         }
 
-        blockStore.updateNode(click.id, b => ({
+        graphStore.updateNode(click.id, b => ({
           ...b,
           x: start.x + delta.x,
           y: start.y + delta.y
@@ -158,7 +158,7 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
       }
       case "edge": {
         const bounds = e.currentTarget.getBoundingClientRect()
-        blockStore.previewEdge = {
+        graphStore.previewEdge = {
           fromId: click.id,
           toPosition: {
             x: e.clientX - bounds.left,
@@ -170,7 +170,7 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
   }
 
   const onMouseDownBlockHeader = (e: MouseEvent<any>, id: NodeId) => {
-    const block = blockStore.getBlock(id)
+    const block = graphStore.getFuncNode(id)
     setClick({
       type: "block",
       id,
@@ -186,11 +186,11 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
   }
 
   const openModalWithBlock = (id: NodeId) => {
-    let block = blockStore.getBlock(id)
-    block = isReferenceBlock(block)
-      ? blockStore.getBlock(block.reference)
+    let block = graphStore.getFuncNode(id)
+    block = isReferenceFuncNode(block)
+      ? graphStore.getFuncNode(block.reference)
       : block
-    if (isCodeBlock(block)) {
+    if (isFuncNode(block)) {
       setModalIsOpen(true)
       setEditingBlock(block)
     }
@@ -214,7 +214,7 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
     }
 
     if (click.type === "edge") {
-      blockStore.addEdge(click.id, id, i)
+      graphStore.addEdge(click.id, id, i)
     }
   }
 
@@ -236,7 +236,7 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
       return
     }
     if (click.type === "edge") {
-      blockStore.removeEdge(id)
+      graphStore.removeEdge(id)
     }
   }
 
@@ -245,22 +245,22 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
   }
 
   const onClickBlockRemove = (e: MouseEvent<any>, id: NodeId) => {
-    blockStore.removeBlock(id)
+    graphStore.removeNode(id)
   }
 
   const onClickBlockDupulicate = (e: MouseEvent<any>, id: NodeId) => {
-    const block = blockStore.getBlock(id)
-    blockStore.addNode({
+    const block = graphStore.getFuncNode(id)
+    graphStore.addNode({
       ...block,
       y: block.y + 180
     })
   }
 
   const onClickBlockMakeReference = (e: MouseEvent<any>, id: NodeId) => {
-    const block = blockStore.getBlock(id)
-    const reference = isReferenceBlock(block) ? block.reference : id
-    blockStore.addNode({
-      type: "ReferenceBlock",
+    const block = graphStore.getFuncNode(id)
+    const reference = isReferenceFuncNode(block) ? block.reference : id
+    graphStore.addNode({
+      type: "ReferenceFuncNode",
       reference,
       x: block.x,
       y: block.y + 180,
@@ -283,9 +283,9 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
           height={container.clientHeight}
         />
       )}
-      {blockStore.allDisplayBlocks().map(b => {
+      {graphStore.allDisplayNodes().map(b => {
         return (
-          <Block
+          <FuncNode
             onMouseDownHeader={onMouseDownBlockHeader}
             onDoubleClickHeader={onDoubleClickBlockHeader}
             onMouseDownInput={onMouseDownBlockInput}
@@ -312,19 +312,19 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
           />
         )
       })}
-      {previewBlock && (
-        <Block
+      {previewNode && (
+        <FuncNode
           linked={false}
           key="preview"
           isPreview={true}
-          {...previewBlock}
+          {...previewNode}
         />
       )}
       {modalIsOpen && editingBlock !== null && (
-        <EditBlockModal
+        <EditFuncModal
           closeModal={closeModal}
-          blockStore={blockStore}
-          block={editingBlock}
+          graphStore={graphStore}
+          node={editingBlock}
         />
       )}
     </div>

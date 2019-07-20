@@ -11,18 +11,18 @@ The graphical interface for the Flow-Based Programming.
 
 ## Features
 
-- Create function blocks
-- Connect blocks
+- Create function nodes
+- Connect nodes
 - Run program
 - Script translation
 - Promise
-- Create reference blocks
+- Create reference nodes
 - Variable arguments `unimplemented`
 - Default parameter `unimplemented`
 - Class `unimplemented`
 - Function block composition `unimplemented`
 - Type checking `unimplemented`
 - Show parameter name
-- Incremental search for blocks `unimplemented`
+- Incremental search for nodes `unimplemented`
 - Align block layout `unimplemented`
 - Nested graphs `unimplemented`

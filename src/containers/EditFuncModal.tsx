@@ -1,28 +1,28 @@
 import React, { FormEvent, SFC, useState } from "react"
 import Modal from "react-modal"
-import { BlockStore } from "../stores/BlockStore"
-import { ICodeBlock } from "../types"
+import { GraphStore } from "../stores/GraphStore"
+import { IFuncNode } from "../types"
 
-export type ModalInput = Pick<ICodeBlock, "id" | "name" | "code" | "isAsync">
+export type ModalInput = Pick<IFuncNode, "id" | "name" | "code" | "isAsync">
 
-export interface EditBlockModalProps {
+export interface EditFuncModalProps {
   closeModal: () => void
-  blockStore: BlockStore
-  block: ICodeBlock
+  graphStore: GraphStore
+  node: IFuncNode
 }
 
-export const EditBlockModal: SFC<EditBlockModalProps> = ({
+export const EditFuncModal: SFC<EditFuncModalProps> = ({
   closeModal,
-  blockStore,
-  block
+  graphStore,
+  node
 }) => {
-  const [modalInput, setModalInput] = useState<ModalInput>(block)
+  const [modalInput, setModalInput] = useState<ModalInput>(node)
 
   const onClickModalOK = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     e.stopPropagation()
     closeModal()
-    blockStore.updateNode(modalInput.id, b => ({
+    graphStore.updateNode(modalInput.id, b => ({
       ...b,
       name: modalInput.name,
       code: modalInput.code,

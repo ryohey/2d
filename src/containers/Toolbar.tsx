@@ -1,20 +1,20 @@
 import React, { SFC } from "react"
 import Icon from "../components/Icon"
-import { BlockStore } from "../stores/BlockStore"
+import { GraphStore } from "../stores/GraphStore"
 import buildCode from "../helpers/buildCode"
 
 export const Toolbar: SFC<{
-  blockStore: BlockStore
+  graphStore: GraphStore
   onClickHelp: () => void
-}> = ({ blockStore, onClickHelp }) => {
+}> = ({ graphStore, onClickHelp }) => {
   const onClickPlay = () => {
-    const code = buildCode(blockStore.nodes, blockStore.edges)
+    const code = buildCode(graphStore.nodes, graphStore.edges)
     eval(code)
   }
 
   const onClickClear = () => {
-    blockStore.edges = []
-    blockStore.nodes = []
+    graphStore.edges = []
+    graphStore.nodes = []
   }
 
   return (

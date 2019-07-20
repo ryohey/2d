@@ -3,113 +3,113 @@ import { action, observable } from "mobx"
 import { createContext } from "react"
 import { createFunction, getParamNames } from "../helpers/functionHelper"
 import {
-  AnyBlock,
-  DisplayBlock,
-  ICodeBlock,
-  isCodeBlock,
-  isReferenceBlock,
+  AnyFuncNode,
+  DisplayFuncNode,
+  IFuncNode,
+  isFuncNode,
+  isReferenceFuncNode,
   PreviewEdge,
   AnyNode,
   FuncEdge
 } from "../types"
 import { NodeId } from "../topology/Graph"
 
-export interface IBlockStore {
-  blocks: AnyBlock[]
+export interface IGraphStore {
+  nodes: AnyFuncNode[]
   edges: FuncEdge[]
-  previewBlock: DisplayBlock | null
+  previewNode: DisplayFuncNode | null
   previewEdge: PreviewEdge | null
 }
 
-export const BlockStoreContext = createContext<IBlockStore>({
-  blocks: [],
+export const GraphStoreContext = createContext<IGraphStore>({
+  nodes: [],
   edges: [],
-  previewBlock: null,
+  previewNode: null,
   previewEdge: null
 })
 
-export class BlockStore {
+export class GraphStore {
   @observable nodes: AnyNode[] = []
   @observable edges: FuncEdge[] = []
 
-  @observable previewBlock: DisplayBlock | null = null
+  @observable previewNode: DisplayFuncNode | null = null
   @observable previewEdge: PreviewEdge | null = null
 
   getNode(id: NodeId): AnyNode {
     return this.nodes.filter(b => b.id === id)[0]
   }
 
-  getBlock(id: NodeId): AnyBlock {
+  getFuncNode(id: NodeId): AnyFuncNode {
     const node = this.getNode(id)
-    if (!(isCodeBlock(node) || isReferenceBlock(node))) {
-      throw new Error("node is not block")
+    if (!(isFuncNode(node) || isReferenceFuncNode(node))) {
+      throw new Error("node is not FuncNode")
     }
     return node
   }
 
-  getOriginBlock(id: NodeId): ICodeBlock {
-    const block = this.getNode(id)
-    if (isReferenceBlock(block)) {
-      return this.getOriginBlock(block.reference)
+  getOriginFuncNode(id: NodeId): IFuncNode {
+    const node = this.getNode(id)
+    if (isReferenceFuncNode(node)) {
+      return this.getOriginFuncNode(node.reference)
     }
-    if (isCodeBlock(block)) {
-      return block
+    if (isFuncNode(node)) {
+      return node
     }
-    throw new Error("origin block is not exist")
+    throw new Error("origin node is not exist")
   }
 
   /*
-    表示用の block オブジェクトを取得する
+    表示用の node オブジェクトを取得する
     inputLength など表示に必要なプロパティが追加されている
     link 先を取得しなくても表示できるように name プロパティなども追加する
   */
-  getDisplayBlock(id: NodeId): DisplayBlock {
-    const block = this.getNode(id)
-    if (!(isCodeBlock(block) || isReferenceBlock(block))) {
-      throw new Error(`id ${id} is not block`)
+  getDisplayNode(id: NodeId): DisplayFuncNode {
+    const node = this.getNode(id)
+    if (!(isFuncNode(node) || isReferenceFuncNode(node))) {
+      throw new Error(`id ${id} is not func node`)
     }
-    const origin = this.getOriginBlock(id)
+    const origin = this.getOriginFuncNode(id)
     return {
-      id: block.id,
-      type: "CodeBlock",
-      x: block.x,
-      y: block.y,
-      linked: isReferenceBlock(block),
+      id: node.id,
+      type: "FuncNode",
+      x: node.x,
+      y: node.y,
+      linked: isReferenceFuncNode(node),
       name: origin.name,
       isAsync: origin.isAsync,
       code: origin.code,
-      inputNames: this.getBlockInputNames(id)
+      inputNames: this.getFuncNodeInputNames(id)
     }
   }
 
-  allDisplayBlocks(): DisplayBlock[] {
-    return this.nodes.map(b => this.getDisplayBlock(b.id))
+  allDisplayNodes(): DisplayFuncNode[] {
+    return this.nodes.map(b => this.getDisplayNode(b.id))
   }
 
   @action
-  addNode(block: AnyNode) {
+  addNode(node: AnyNode) {
     this.nodes = [
       ...this.nodes,
       {
-        ...block,
-        id: this.lastBlockId() + 1
+        ...node,
+        id: this.lastNodeId() + 1
       }
     ]
   }
 
-  getBlockInputNames(id: NodeId) {
-    let block = this.getNode(id)
-    if (isReferenceBlock(block)) {
-      block = this.getNode(block.reference)
+  getFuncNodeInputNames(id: NodeId) {
+    let node = this.getNode(id)
+    if (isReferenceFuncNode(node)) {
+      node = this.getNode(node.reference)
     }
-    if (!isCodeBlock(block)) {
+    if (!isFuncNode(node)) {
       return []
     }
-    const func = createFunction(block.code)
+    const func = createFunction(node.code)
     return getParamNames(func)
   }
 
-  getUniqueBlockName(requiredName: string = "") {
+  getUniqueNodeName(requiredName: string = "") {
     let name = requiredName
     let count = 2
     while (_.find(this.nodes, { name })) {
@@ -120,16 +120,16 @@ export class BlockStore {
   }
 
   @action
-  removeBlock(id: NodeId) {
+  removeNode(id: NodeId) {
     this.nodes = _.reject(this.nodes, b => b.id === id)
     this.edges = _.reject(this.edges, e => e.toId === id || e.fromId === id)
     this.nodes
-      .filter(isReferenceBlock)
+      .filter(isReferenceFuncNode)
       .filter(b => b.reference === id)
-      .forEach(b => this.removeBlock(b.id))
+      .forEach(b => this.removeNode(b.id))
   }
 
-  lastBlockId() {
+  lastNodeId() {
     const maxId = _.max(this.nodes.map(b => b.id))
     return maxId !== undefined ? maxId : -1
   }

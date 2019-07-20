@@ -4,7 +4,7 @@ export interface BaseNode<T extends string> extends INode {
   type: T
 }
 
-export interface ICodeBlock extends BaseNode<"CodeBlock"> {
+export interface IFuncNode extends BaseNode<"FuncNode"> {
   name: string
   code: string
   isAsync?: boolean
@@ -12,21 +12,22 @@ export interface ICodeBlock extends BaseNode<"CodeBlock"> {
   y: number
 }
 
-export interface IReferenceBlock extends BaseNode<"ReferenceBlock"> {
+export interface IReferenceFuncNode extends BaseNode<"ReferenceFuncNode"> {
   reference: NodeId
   x: number
   y: number
 }
 
-export const isCodeBlock = (node: AnyNode): node is ICodeBlock =>
-  node.type === "CodeBlock"
-export const isReferenceBlock = (node: AnyNode): node is IReferenceBlock =>
-  node.type === "ReferenceBlock"
+export const isFuncNode = (node: AnyNode): node is IFuncNode =>
+  node.type === "FuncNode"
+export const isReferenceFuncNode = (
+  node: AnyNode
+): node is IReferenceFuncNode => node.type === "ReferenceFuncNode"
 
-export type AnyBlock = ICodeBlock | IReferenceBlock
-export type AnyNode = AnyBlock
+export type AnyFuncNode = IFuncNode | IReferenceFuncNode
+export type AnyNode = AnyFuncNode
 
-export interface DisplayBlock extends ICodeBlock {
+export interface DisplayFuncNode extends IFuncNode {
   linked: boolean
   inputNames: string[]
 }

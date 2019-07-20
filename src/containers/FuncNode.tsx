@@ -1,7 +1,7 @@
 import React, { SFC, MouseEvent, useState } from "react"
 import Icon from "../components/Icon"
-import "./Block.css"
-import { DisplayBlock } from "../types"
+import "./FuncNode.css"
+import { DisplayFuncNode } from "../types"
 import { DropDownMenu } from "../components/DropDownMenu"
 import { NodeId } from "../topology/Graph"
 
@@ -37,7 +37,7 @@ const RightPort: SFC<PortProps> = ({ name, onMouseDown, onMouseUp }) => {
   )
 }
 
-export type BlockProps = DisplayBlock & {
+export type BlockProps = DisplayFuncNode & {
   isPreview?: boolean
   containerRef?: (c: HTMLElement | null) => void
   onMouseDownHeader?: (e: MouseEvent<any>, id: NodeId) => void
@@ -54,7 +54,7 @@ export type BlockProps = DisplayBlock & {
 
 const NOP = () => {}
 
-export const Block: SFC<BlockProps> = ({
+export const FuncNode: SFC<BlockProps> = ({
   code,
   name,
   x,

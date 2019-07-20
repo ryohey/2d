@@ -8,7 +8,7 @@ import {
 } from "../types"
 import { foldTree } from "../topology/Tree"
 import { graphToTree } from "../topology/graphToTree"
-import { NodeId } from "../topology/Graph"
+import { NodeId, IGraph } from "../topology/Graph"
 
 interface IntermediateCode {
   code: string
@@ -58,8 +58,9 @@ const makeFuncNodeCode = (
   }
 }
 
-export default function buildCode(nodes: AnyNode[], edges: FuncEdge[]) {
-  const trees = graphToTree(nodes, edges)
+export default function buildCode(graph: IGraph<AnyNode, FuncEdge>) {
+  const { nodes } = graph
+  const trees = graphToTree(graph)
 
   const functionCodes = nodes
     .filter(isFuncNode)

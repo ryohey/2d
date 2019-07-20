@@ -20,7 +20,7 @@ graphStore.edges = exampleGraph.edges
 codeStore.codes = exampleCodes()
 
 function _CodeOutput({ graphStore }: { graphStore: GraphStore }) {
-  const code = buildCode(graphStore.nodes, graphStore.edges)
+  const code = buildCode(graphStore)
   return (
     <div className="CodeOutput">
       <pre>{code}</pre>

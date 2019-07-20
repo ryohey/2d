@@ -8,7 +8,7 @@ export const Toolbar: SFC<{
   onClickHelp: () => void
 }> = ({ graphStore, onClickHelp }) => {
   const onClickPlay = () => {
-    const code = buildCode(graphStore.nodes, graphStore.edges)
+    const code = buildCode(graphStore)
     eval(code)
   }
 

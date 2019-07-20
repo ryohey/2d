@@ -1,15 +1,10 @@
 import React, { MouseEvent, useState, SFC } from "react"
 import { Block } from "./Block"
-import {
-  NodeId,
-  IPoint,
-  ICodeBlock,
-  isReferenceBlock,
-  isCodeBlock
-} from "../types"
+import { IPoint, ICodeBlock, isReferenceBlock, isCodeBlock } from "../types"
 import { EditBlockModal } from "./EditBlockModal"
 import { BlockStore } from "../stores/BlockStore"
 import { DrawCanvas } from "../components/DrawCanvas"
+import { NodeId } from "../topology/Graph"
 
 interface ClickData {
   type: string

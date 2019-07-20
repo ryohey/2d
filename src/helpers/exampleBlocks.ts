@@ -1,6 +1,7 @@
-import { IGraph } from "../types"
+import { IGraph } from "../topology/Graph"
+import { AnyNode, FuncEdge } from "../types"
 
-const graph: IGraph = {
+const graph: IGraph<AnyNode, FuncEdge> = {
   nodes: [
     {
       type: "CodeBlock",

@@ -6,17 +6,17 @@ import {
   AnyBlock,
   DisplayBlock,
   ICodeBlock,
-  IEdge,
   isCodeBlock,
   isReferenceBlock,
-  NodeId,
   PreviewEdge,
-  AnyNode
+  AnyNode,
+  FuncEdge
 } from "../types"
+import { NodeId } from "../topology/Graph"
 
 export interface IBlockStore {
   blocks: AnyBlock[]
-  edges: IEdge[]
+  edges: FuncEdge[]
   previewBlock: DisplayBlock | null
   previewEdge: PreviewEdge | null
 }
@@ -30,7 +30,7 @@ export const BlockStoreContext = createContext<IBlockStore>({
 
 export class BlockStore {
   @observable nodes: AnyNode[] = []
-  @observable edges: IEdge[] = []
+  @observable edges: FuncEdge[] = []
 
   @observable previewBlock: DisplayBlock | null = null
   @observable previewEdge: PreviewEdge | null = null
@@ -146,7 +146,7 @@ export class BlockStore {
 
   @action
   addEdge(fromId: NodeId, toId: NodeId, toIndex: number) {
-    const edge: IEdge = { fromId, toId, toIndex }
+    const edge = { fromId, toId, toIndex }
     if (!_.find(this.edges, edge)) {
       this.edges = [...this.edges, edge]
     }

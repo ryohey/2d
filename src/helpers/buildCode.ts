@@ -1,14 +1,13 @@
-import _ from "lodash"
 import {
-  IEdge,
-  NodeId,
   ICodeBlock,
   isCodeBlock,
   isReferenceBlock,
   AnyNode,
-  AnyBlock
+  AnyBlock,
+  FuncEdge
 } from "../types"
-import { makeTrees, foldTree } from "./Tree"
+import { foldTree } from "../topology/Tree"
+import { graphToTree } from "../topology/graphToTree"
 
 interface IntermediateCode {
   code: string
@@ -16,8 +15,8 @@ interface IntermediateCode {
   isPromise: boolean
 }
 
-export default function buildCode(nodes: AnyNode[], edges: IEdge[]) {
-  const trees = makeTrees(nodes, edges)
+export default function buildCode(nodes: AnyNode[], edges: FuncEdge[]) {
+  const trees = graphToTree(nodes, edges)
 
   const getFuncVarName = (block: ICodeBlock) => {
     const f = block.name ? `${block.name}` : `func${block.id}`
@@ -30,33 +29,29 @@ export default function buildCode(nodes: AnyNode[], edges: IEdge[]) {
 
   const functionCodes = nodes
     .filter(isCodeBlock)
-    .map(b => `const ${getFuncVarName(b)} = ${b.code}`)
+    .map(block => {
+      const varName = getFuncVarName(block)
+      return `const ${varName} = ${block.code}`
+    })
     .join("\n")
 
   const getOriginBlock = (block: AnyBlock): ICodeBlock => {
-    if (isCodeBlock(block)) {
-      return block
+    switch (block.type) {
+      case "CodeBlock":
+        return block
+      case "ReferenceBlock":
+        const node = nodes.filter(n => n.id === block.reference)[0]
+        if (isCodeBlock(node)) {
+          return node
+        }
+        if (isReferenceBlock(node)) {
+          return getOriginBlock(node)
+        }
+        throw new Error("Origin node is not block")
     }
-    if (isReferenceBlock(block)) {
-      const originNodes = nodes.filter(n => n.id === block.reference)
-      if (originNodes.length === 0) {
-        throw new Error("reference is broken")
-      }
-      if (originNodes.length > 1) {
-        throw new Error("There are multiple origin nodes")
-      }
-      const node = originNodes[0]
-      if (isCodeBlock(node)) {
-        return node
-      }
-      if (isReferenceBlock(node)) {
-        return getOriginBlock(node)
-      }
-      throw new Error("Origin node is not block")
-    }
-    throw new Error("Unsupported block type")
   }
 
+  // create function calls
   const codes = trees.map(tree =>
     foldTree(tree, (node, children: IntermediateCode[]) => {
       if (!(isCodeBlock(node.value) || isReferenceBlock(node.value))) {

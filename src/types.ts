@@ -1,12 +1,10 @@
-export type NodeId = number
+import { NodeId, INode, IEdge } from "./topology/Graph"
 
-export interface INode<T extends string> {
-  id: NodeId
+export interface BaseNode<T extends string> extends INode {
   type: T
 }
 
-export interface ICodeBlock extends INode<"CodeBlock"> {
-  id: NodeId
+export interface ICodeBlock extends BaseNode<"CodeBlock"> {
   name: string
   code: string
   isAsync?: boolean
@@ -14,7 +12,7 @@ export interface ICodeBlock extends INode<"CodeBlock"> {
   y: number
 }
 
-export interface IReferenceBlock extends INode<"ReferenceBlock"> {
+export interface IReferenceBlock extends BaseNode<"ReferenceBlock"> {
   reference: NodeId
   x: number
   y: number
@@ -25,12 +23,8 @@ export const isCodeBlock = (node: AnyNode): node is ICodeBlock =>
 export const isReferenceBlock = (node: AnyNode): node is IReferenceBlock =>
   node.type === "ReferenceBlock"
 
-export interface IVariable extends INode<"Variable"> {
-  value: any
-}
-
 export type AnyBlock = ICodeBlock | IReferenceBlock
-export type AnyNode = AnyBlock | IVariable
+export type AnyNode = AnyBlock
 
 export interface DisplayBlock extends ICodeBlock {
   linked: boolean
@@ -42,17 +36,11 @@ export interface IPoint {
   y: number
 }
 
-export interface IEdge {
+export interface PreviewEdge {
   fromId: NodeId
-  toId: NodeId
-  toIndex: number
-}
-
-export type PreviewEdge = Pick<IEdge, "fromId"> & {
   toPosition: IPoint
 }
 
-export interface IGraph {
-  nodes: AnyNode[]
-  edges: IEdge[]
+export interface FuncEdge extends IEdge {
+  toIndex: number
 }

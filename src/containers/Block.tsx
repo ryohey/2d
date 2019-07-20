@@ -1,8 +1,9 @@
 import React, { SFC, MouseEvent, useState } from "react"
 import Icon from "../components/Icon"
 import "./Block.css"
-import { DisplayBlock, NodeId } from "../types"
+import { DisplayBlock } from "../types"
 import { DropDownMenu } from "../components/DropDownMenu"
+import { NodeId } from "../topology/Graph"
 
 export interface PortProps {
   name: string

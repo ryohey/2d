@@ -1,5 +1,5 @@
 import _ from "lodash"
-import { IEdge, BlockId, ICodeBlock } from "../types"
+import { IEdge, NodeId, ICodeBlock } from "../types"
 import { notEmpty } from "./typeHelper"
 import { createFunction } from "./functionHelper"
 
@@ -12,7 +12,7 @@ function wrapPromiseAll(values: string[]) {
 
 // 出力が未計算で入力が揃っている（もしくは無い）もの
 interface Calculatable {
-  id: BlockId
+  id: NodeId
   inputs: string[]
 }
 

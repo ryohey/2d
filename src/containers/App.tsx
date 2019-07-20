@@ -15,7 +15,7 @@ import { Toolbar } from "./Toolbar"
 const blockStore = new BlockStore()
 const codeStore = new CodeStore()
 
-exampleBlocks.blocks.forEach(b => blockStore.addBlock(b))
+exampleBlocks.nodes.forEach(b => blockStore.addBlock(b))
 blockStore.edges = exampleBlocks.edges
 codeStore.codes = exampleCodes()
 

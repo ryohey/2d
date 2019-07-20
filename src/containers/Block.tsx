@@ -2,7 +2,7 @@ import React, { SFC, MouseEvent, useState } from "react"
 import Icon from "../components/Icon"
 import "./Block.css"
 import _ from "lodash"
-import { DisplayBlock, BlockId } from "../types"
+import { DisplayBlock, NodeId } from "../types"
 import { DropDownMenu } from "../components/DropDownMenu"
 
 export interface PortProps {
@@ -40,16 +40,16 @@ const RightPort: SFC<PortProps> = ({ name, onMouseDown, onMouseUp }) => {
 export type BlockProps = DisplayBlock & {
   isPreview?: boolean
   containerRef?: (c: HTMLElement | null) => void
-  onMouseDownHeader?: (e: MouseEvent<any>, id: BlockId) => void
-  onDoubleClickHeader?: (e: MouseEvent<any>, id: BlockId) => void
-  onMouseDownInput?: (e: MouseEvent<any>, id: BlockId, index: number) => void
-  onMouseUpInput?: (e: MouseEvent<any>, id: BlockId, index: number) => void
-  onMouseDownOutput?: (e: MouseEvent<any>, id: BlockId) => void
-  onMouseUpOutput?: (e: MouseEvent<any>, id: BlockId) => void
-  onDoubleClickBody?: (e: MouseEvent<any>, id: BlockId) => void
-  onClickMakeReference?: (e: MouseEvent<any>, id: BlockId) => void
-  onClickDupulicate?: (e: MouseEvent<any>, id: BlockId) => void
-  onClickRemove?: (e: MouseEvent<any>, id: BlockId) => void
+  onMouseDownHeader?: (e: MouseEvent<any>, id: NodeId) => void
+  onDoubleClickHeader?: (e: MouseEvent<any>, id: NodeId) => void
+  onMouseDownInput?: (e: MouseEvent<any>, id: NodeId, index: number) => void
+  onMouseUpInput?: (e: MouseEvent<any>, id: NodeId, index: number) => void
+  onMouseDownOutput?: (e: MouseEvent<any>, id: NodeId) => void
+  onMouseUpOutput?: (e: MouseEvent<any>, id: NodeId) => void
+  onDoubleClickBody?: (e: MouseEvent<any>, id: NodeId) => void
+  onClickMakeReference?: (e: MouseEvent<any>, id: NodeId) => void
+  onClickDupulicate?: (e: MouseEvent<any>, id: NodeId) => void
+  onClickRemove?: (e: MouseEvent<any>, id: NodeId) => void
 }
 
 const NOP = () => {}

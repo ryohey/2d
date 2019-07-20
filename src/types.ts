@@ -1,10 +1,15 @@
-export type BlockId = number
+export type NodeId = number
 
-export interface ICodeBlock {
-  id: BlockId
+export interface INode<T extends string> {
+  id: NodeId
+  type: T
+}
+
+export interface ICodeBlock extends INode<"CodeBlock"> {
+  id: NodeId
   name?: string
   code?: string
-  reference?: BlockId
+  reference?: NodeId
   isAsync?: boolean
 }
 
@@ -12,6 +17,8 @@ export interface IBlock extends ICodeBlock {
   x: number
   y: number
 }
+
+export type AnyNode = IBlock
 
 export interface DisplayBlock extends IBlock {
   linked: boolean
@@ -24,8 +31,8 @@ export interface IPoint {
 }
 
 export interface IEdge {
-  fromId: BlockId
-  toId: BlockId
+  fromId: NodeId
+  toId: NodeId
   toIndex: number
 }
 
@@ -34,6 +41,6 @@ export type PreviewEdge = Pick<IEdge, "fromId"> & {
 }
 
 export interface IGraph {
-  blocks: IBlock[]
+  nodes: AnyNode[]
   edges: IEdge[]
 }

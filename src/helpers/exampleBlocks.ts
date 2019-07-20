@@ -1,8 +1,9 @@
 import { IGraph } from "../types"
 
 const graph: IGraph = {
-  blocks: [
+  nodes: [
     {
+      type: "CodeBlock",
       name: "constant",
       code: "() => 1",
       x: 44,
@@ -10,6 +11,7 @@ const graph: IGraph = {
       id: 0
     },
     {
+      type: "CodeBlock",
       name: "time",
       code: "() => 1000",
       x: 49,
@@ -17,6 +19,7 @@ const graph: IGraph = {
       id: 8
     },
     {
+      type: "CodeBlock",
       name: "delay",
       code:
         "(value, delay) => new Promise((resolve, reject) => {\n  setTimeout(() => resolve(value), delay)\n})",
@@ -26,6 +29,7 @@ const graph: IGraph = {
       id: 7
     },
     {
+      type: "CodeBlock",
       name: "constant2",
       code: "() => 2",
       x: 367,
@@ -33,6 +37,7 @@ const graph: IGraph = {
       id: 1
     },
     {
+      type: "CodeBlock",
       name: "time2",
       code: "() => 2000",
       x: 377,
@@ -40,12 +45,14 @@ const graph: IGraph = {
       id: 10
     },
     {
+      type: "CodeBlock",
       reference: 2,
       x: 518,
       y: 111,
       id: 9
     },
     {
+      type: "CodeBlock",
       id: 11,
       x: 650.6666564941406,
       y: 26,
@@ -53,6 +60,7 @@ const graph: IGraph = {
       code: "(a, b) => a + b"
     },
     {
+      type: "CodeBlock",
       name: "popup",
       code: "str => alert(str)",
       x: 815,

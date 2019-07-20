@@ -1,6 +1,6 @@
 import { action, observable } from "mobx"
 import _ from "lodash"
-import { IEdge, IBlock, BlockId, DisplayBlock, PreviewEdge } from "../types"
+import { IEdge, IBlock, NodeId, DisplayBlock, PreviewEdge } from "../types"
 import { Optional } from "../helpers/typeHelper"
 import { createFunction, getParamNames } from "../helpers/functionHelper"
 import { createContext } from "react"
@@ -26,7 +26,7 @@ export class BlockStore {
   @observable previewBlock: DisplayBlock | null = null
   @observable previewEdge: PreviewEdge | null = null
 
-  getBlock(id: BlockId): IBlock {
+  getBlock(id: NodeId): IBlock {
     return this.blocks.filter(b => b.id === id)[0]
   }
 
@@ -35,7 +35,7 @@ export class BlockStore {
     inputLength など表示に必要なプロパティが追加されている
     link 先を取得しなくても表示できるように name プロパティなども追加する
   */
-  getDisplayBlock(id: BlockId): DisplayBlock {
+  getDisplayBlock(id: NodeId): DisplayBlock {
     const block = this.getBlock(id)
     const linked = block.reference ? this.getBlock(block.reference) : undefined
     return {
@@ -64,7 +64,7 @@ export class BlockStore {
     ]
   }
 
-  getBlockInputNames(id: BlockId) {
+  getBlockInputNames(id: NodeId) {
     let block = this.getBlock(id)
     if (block.reference) {
       block = this.getBlock(block.reference)
@@ -88,7 +88,7 @@ export class BlockStore {
   }
 
   @action
-  removeBlock(id: BlockId) {
+  removeBlock(id: NodeId) {
     this.blocks = _.reject(this.blocks, b => b.id === id)
     this.edges = _.reject(this.edges, e => e.toId === id || e.fromId === id)
     this.blocks
@@ -102,7 +102,7 @@ export class BlockStore {
   }
 
   @action
-  updateBlock(id: BlockId, updater: (block: IBlock) => IBlock) {
+  updateBlock(id: NodeId, updater: (block: IBlock) => IBlock) {
     this.blocks = this.blocks.map(b => {
       if (b.id !== id) {
         return b
@@ -112,7 +112,7 @@ export class BlockStore {
   }
 
   @action
-  addEdge(fromId: BlockId, toId: BlockId, toIndex: number) {
+  addEdge(fromId: NodeId, toId: NodeId, toIndex: number) {
     const edge: IEdge = { fromId, toId, toIndex }
     if (!_.find(this.edges, edge)) {
       this.edges = [...this.edges, edge]
@@ -120,7 +120,7 @@ export class BlockStore {
   }
 
   @action
-  removeEdge(fromId: BlockId) {
+  removeEdge(fromId: NodeId) {
     this.edges = _.reject(this.edges, e => e.fromId === fromId)
   }
 }

@@ -1,13 +1,13 @@
 import React, { MouseEvent, useState, SFC } from "react"
 import { Block } from "./Block"
-import { BlockId, IPoint, IBlock } from "../types"
+import { NodeId, IPoint, IBlock } from "../types"
 import { EditBlockModal } from "./EditBlockModal"
 import { BlockStore } from "../stores/BlockStore"
 import { DrawCanvas } from "../components/DrawCanvas"
 
 interface ClickData {
   type: string
-  id: BlockId
+  id: NodeId
   start?: IPoint
   startOffset?: IPoint
 }
@@ -31,7 +31,7 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
     [id: number]: HTMLElement | undefined
   }>({})
 
-  const positionOfInput = (id: BlockId, index: number) => {
+  const positionOfInput = (id: NodeId, index: number) => {
     const block = blockElements[id]
     if (block === undefined) {
       return {
@@ -45,7 +45,7 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
     }
   }
 
-  const positionOfOutput = (id: BlockId) => {
+  const positionOfOutput = (id: NodeId) => {
     const block = blockElements[id]
     if (block === undefined) {
       return {
@@ -109,6 +109,7 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
     setClick(null)
     const bounds = e.currentTarget.getBoundingClientRect()
     blockStore.addBlock({
+      type: "CodeBlock",
       x: e.clientX - bounds.left,
       y: e.clientY - bounds.top,
       name: "func",
@@ -165,7 +166,7 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
     }
   }
 
-  const onMouseDownBlockHeader = (e: MouseEvent<any>, id: BlockId) => {
+  const onMouseDownBlockHeader = (e: MouseEvent<any>, id: NodeId) => {
     const block = blockStore.getBlock(id)
     setClick({
       type: "block",
@@ -181,25 +182,25 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
     })
   }
 
-  const openModalWithBlock = (id: BlockId) => {
+  const openModalWithBlock = (id: NodeId) => {
     let block = blockStore.getBlock(id)
     block = block.reference ? blockStore.getBlock(block.reference) : block
     setModalIsOpen(true)
     setEditingBlock(block)
   }
 
-  const onDoubleClickBlockHeader = (e: MouseEvent<any>, id: BlockId) => {
+  const onDoubleClickBlockHeader = (e: MouseEvent<any>, id: NodeId) => {
     setClick(null)
     openModalWithBlock(id)
   }
 
   const onMouseDownBlockInput = (
     e: MouseEvent<any>,
-    id: BlockId,
+    id: NodeId,
     index: number
   ) => {}
 
-  const onMouseUpBlockInput = (e: MouseEvent<any>, id: BlockId, i: number) => {
+  const onMouseUpBlockInput = (e: MouseEvent<any>, id: NodeId, i: number) => {
     setClick(null)
     if (!click) {
       return
@@ -210,19 +211,19 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
     }
   }
 
-  const onDoubleClickBlockBody = (e: MouseEvent<any>, id: BlockId) => {
+  const onDoubleClickBlockBody = (e: MouseEvent<any>, id: NodeId) => {
     setClick(null)
     openModalWithBlock(id)
   }
 
-  const onMouseDownBlockOutput = (e: MouseEvent<any>, id: BlockId) => {
+  const onMouseDownBlockOutput = (e: MouseEvent<any>, id: NodeId) => {
     setClick({
       type: "edge",
       id
     })
   }
 
-  const onMouseUpBlockOutput = (e: MouseEvent<any>, id: BlockId) => {
+  const onMouseUpBlockOutput = (e: MouseEvent<any>, id: NodeId) => {
     setClick(null)
     if (!click) {
       return
@@ -236,11 +237,11 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
     setModalIsOpen(false)
   }
 
-  const onClickBlockRemove = (e: MouseEvent<any>, id: BlockId) => {
+  const onClickBlockRemove = (e: MouseEvent<any>, id: NodeId) => {
     blockStore.removeBlock(id)
   }
 
-  const onClickBlockDupulicate = (e: MouseEvent<any>, id: BlockId) => {
+  const onClickBlockDupulicate = (e: MouseEvent<any>, id: NodeId) => {
     const block = blockStore.getBlock(id)
     blockStore.addBlock({
       ...block,
@@ -248,10 +249,11 @@ export const Stage: SFC<StageProps> = ({ blockStore }) => {
     })
   }
 
-  const onClickBlockMakeReference = (e: MouseEvent<any>, id: BlockId) => {
+  const onClickBlockMakeReference = (e: MouseEvent<any>, id: NodeId) => {
     const block = blockStore.getBlock(id)
     const link = block.reference || id
     blockStore.addBlock({
+      type: "CodeBlock",
       reference: link,
       x: block.x,
       y: block.y + 180

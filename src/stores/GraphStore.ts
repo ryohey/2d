@@ -1,6 +1,5 @@
 import _ from "lodash"
 import { action, observable } from "mobx"
-import { createContext } from "react"
 import { createFunction, getParamNames } from "../helpers/functionHelper"
 import {
   AnyFuncNode,
@@ -10,24 +9,18 @@ import {
   isReferenceFuncNode,
   PreviewEdge,
   AnyNode,
-  FuncEdge
+  FuncEdge,
+  IPoint
 } from "../types"
 import { NodeId } from "../topology/Graph"
 import { notEmpty } from "../helpers/typeHelper"
 
-export interface IGraphStore {
-  nodes: AnyNode[]
-  edges: FuncEdge[]
-  previewNode: DisplayFuncNode | null
-  previewEdge: PreviewEdge | null
+interface ClickData {
+  type: string
+  id: NodeId
+  start?: IPoint
+  startOffset?: IPoint
 }
-
-export const GraphStoreContext = createContext<IGraphStore>({
-  nodes: [],
-  edges: [],
-  previewNode: null,
-  previewEdge: null
-})
 
 export class GraphStore {
   @observable nodes: AnyNode[] = []
@@ -35,6 +28,10 @@ export class GraphStore {
 
   @observable previewNode: DisplayFuncNode | null = null
   @observable previewEdge: PreviewEdge | null = null
+
+  @observable editingNode: AnyNode | null = null
+
+  private dragInfo: ClickData | null = null
 
   getNode(id: NodeId): AnyNode {
     return this.nodes.filter(b => b.id === id)[0]
@@ -99,6 +96,28 @@ export class GraphStore {
     ]
   }
 
+  @action
+  dupulicateNode(id: NodeId) {
+    const block = this.getFuncNode(id)
+    this.addNode({
+      ...block,
+      y: block.y + 180
+    })
+  }
+
+  @action
+  createReferenceFuncNode(id: NodeId) {
+    const block = this.getFuncNode(id)
+    const reference = isReferenceFuncNode(block) ? block.reference : id
+    this.addNode({
+      type: "ReferenceFuncNode",
+      reference,
+      x: block.x,
+      y: block.y + 180,
+      id: -1
+    })
+  }
+
   getFuncNodeInputNames(id: NodeId) {
     let node = this.getNode(id)
     if (isReferenceFuncNode(node)) {
@@ -157,5 +176,97 @@ export class GraphStore {
   @action
   removeEdge(fromId: NodeId) {
     this.edges = _.reject(this.edges, e => e.fromId === fromId)
+  }
+
+  startDragFuncNode = (id: NodeId, x: number, y: number) => {
+    this.dragInfo = {
+      type: "block",
+      id,
+      startOffset: { x, y }
+    }
+  }
+
+  startDragOnNodeOutput = (id: NodeId) => {
+    this.dragInfo = {
+      type: "edge",
+      id
+    }
+  }
+
+  endDragOnNodeOutput = () => {
+    if (this.dragInfo !== null && this.dragInfo.type === "edge") {
+      this.removeEdge(this.dragInfo.id)
+      this.dragInfo = null
+    }
+  }
+
+  endDragOnNodeInput = (id: NodeId, index: number) => {
+    if (this.dragInfo !== null && this.dragInfo.type === "edge") {
+      this.addEdge(this.dragInfo.id, id, index)
+      this.dragInfo = null
+    }
+  }
+
+  dragMoveOnStage = (x: number, y: number) => {
+    if (this.previewNode) {
+      this.previewNode = {
+        ...this.previewNode,
+        x,
+        y
+      }
+      return
+    }
+
+    if (this.dragInfo === null) {
+      return
+    }
+
+    switch (this.dragInfo.type) {
+      case "block": {
+        const { startOffset, start } = this.dragInfo
+        if (startOffset === undefined || start === undefined) {
+          break
+        }
+        const delta = {
+          x: x - startOffset.x,
+          y: y - startOffset.y
+        }
+
+        this.updateNode(this.dragInfo.id, b => ({
+          ...b,
+          x: start.x + delta.x,
+          y: start.y + delta.y
+        }))
+        break
+      }
+      case "edge": {
+        this.previewEdge = {
+          fromId: this.dragInfo.id,
+          toPosition: { x, y }
+        }
+      }
+    }
+  }
+
+  endDragOnStage = () => {
+    this.previewEdge = null
+
+    const { previewNode } = this
+    if (previewNode) {
+      this.previewNode = null
+      this.addNode(previewNode)
+    }
+  }
+
+  addNewFuncNode = (x: number, y: number) => {
+    this.addNode({
+      type: "FuncNode",
+      x,
+      y,
+      name: "func",
+      code: `x => x`,
+      isAsync: false,
+      id: -1
+    })
   }
 }

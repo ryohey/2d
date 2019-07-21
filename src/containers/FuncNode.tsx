@@ -4,6 +4,8 @@ import "./FuncNode.css"
 import { DisplayFuncNode } from "../types"
 import { DropDownMenu } from "../components/DropDownMenu"
 import { NodeId } from "../topology/Graph"
+import { GraphStore } from "../stores/GraphStore"
+import { DragTrigger } from "../components/Drag"
 
 export interface PortProps {
   name: string
@@ -38,37 +40,17 @@ const RightPort: SFC<PortProps> = ({ name, onMouseDown, onMouseUp }) => {
 }
 
 export interface FuncNodeProps {
+  graphStore: GraphStore
   node: DisplayFuncNode
   isPreview?: boolean
   containerRef?: (c: HTMLElement | null) => void
-  onMouseDownHeader?: (e: MouseEvent<any>, id: NodeId) => void
-  onDoubleClickHeader?: (e: MouseEvent<any>, id: NodeId) => void
-  onMouseDownInput?: (e: MouseEvent<any>, id: NodeId, index: number) => void
-  onMouseUpInput?: (e: MouseEvent<any>, id: NodeId, index: number) => void
-  onMouseDownOutput?: (e: MouseEvent<any>, id: NodeId) => void
-  onMouseUpOutput?: (e: MouseEvent<any>, id: NodeId) => void
-  onDoubleClickBody?: (e: MouseEvent<any>, id: NodeId) => void
-  onClickMakeReference?: (e: MouseEvent<any>, id: NodeId) => void
-  onClickDupulicate?: (e: MouseEvent<any>, id: NodeId) => void
-  onClickRemove?: (e: MouseEvent<any>, id: NodeId) => void
 }
 
-const NOP = () => {}
-
 export const FuncNode: SFC<FuncNodeProps> = ({
+  graphStore,
   node,
   isPreview,
-  containerRef,
-  onMouseDownHeader = NOP,
-  onDoubleClickHeader = NOP,
-  onMouseDownInput = NOP,
-  onMouseUpInput = NOP,
-  onMouseDownOutput = NOP,
-  onMouseUpOutput = NOP,
-  onDoubleClickBody = NOP,
-  onClickMakeReference = NOP,
-  onClickDupulicate = NOP,
-  onClickRemove = NOP
+  containerRef
 }) => {
   const [isMenuOpened, setIsMenuOpened] = useState(false)
 
@@ -78,6 +60,10 @@ export const FuncNode: SFC<FuncNodeProps> = ({
     node.isAsync && "async",
     isPreview && "preview"
   ]
+
+  const openModal = () => {
+    graphStore.editingNode = node
+  }
 
   return (
     <div
@@ -89,12 +75,12 @@ export const FuncNode: SFC<FuncNodeProps> = ({
         }
       }}
     >
-      <div
+      <DragTrigger
         className="header"
-        onMouseDown={e => onMouseDownHeader(e, node.id)}
+        data={node}
         onDoubleClick={e => {
           e.stopPropagation()
-          onDoubleClickHeader(e, node.id)
+          openModal()
         }}
       >
         <div className="name">
@@ -111,16 +97,19 @@ export const FuncNode: SFC<FuncNodeProps> = ({
         >
           <Icon name="menu-down" />
         </div>
-      </div>
+      </DragTrigger>
       {isMenuOpened && (
         <DropDownMenu
           items={[
             {
               name: "make reference",
-              onClick: e => onClickMakeReference(e, node.id)
+              onClick: e => graphStore.createReferenceFuncNode(node.id)
             },
-            { name: "duplicate", onClick: e => onClickDupulicate(e, node.id) },
-            { name: "remove", onClick: e => onClickRemove(e, node.id) }
+            {
+              name: "duplicate",
+              onClick: e => graphStore.dupulicateNode(node.id)
+            },
+            { name: "remove", onClick: e => graphStore.removeNode(node.id) }
           ]}
           onRequestClose={() => setIsMenuOpened(false)}
         />
@@ -131,24 +120,21 @@ export const FuncNode: SFC<FuncNodeProps> = ({
             <LeftPort
               name={name}
               key={i}
-              onMouseDown={e => onMouseDownInput(e, node.id, i)}
-              onMouseUp={e => onMouseUpInput(e, node.id, i)}
+              onMouseDown={e => {}}
+              onMouseUp={e => graphStore.endDragOnNodeInput(node.id, i)}
             />
           ))}
         </div>
         <div className="outputs">
           <RightPort
             name=""
-            onMouseDown={e => onMouseDownOutput(e, node.id)}
-            onMouseUp={e => onMouseUpOutput(e, node.id)}
+            onMouseDown={e => graphStore.startDragOnNodeOutput(node.id)}
+            onMouseUp={e => graphStore.endDragOnNodeOutput()}
           />
         </div>
       </div>
       {!node.linked && (
-        <pre
-          className="code"
-          onDoubleClick={e => onDoubleClickBody(e, node.id)}
-        >
+        <pre className="code" onDoubleClick={openModal}>
           {node.code}
         </pre>
       )}

@@ -4,7 +4,8 @@ import {
   isReferenceFuncNode,
   AnyNode,
   AnyFuncNode,
-  FuncEdge
+  FuncEdge,
+  IVariableNode
 } from "../types"
 import { foldTree } from "../topology/Tree"
 import { graphToTree } from "../topology/graphToTree"
@@ -16,7 +17,7 @@ interface IntermediateCode {
   isPromise: boolean
 }
 
-const getFuncVarName = (node: IFuncNode) => {
+const getFuncVarName = (node: { name: string; id: NodeId }) => {
   const f = node.name ? `${node.name}` : `func${node.id}`
   if ((window as any)[f] !== undefined) {
     // グローバルな関数と名前が被らないようにする
@@ -58,6 +59,15 @@ const makeFuncNodeCode = (
   }
 }
 
+const makeVariableNodeCode = (node: IVariableNode): IntermediateCode => {
+  const varName = getFuncVarName(node)
+  return {
+    code: `const ${varName} = ${node.value.value}`,
+    varName,
+    isPromise: false
+  }
+}
+
 export default function buildCode(graph: IGraph<AnyNode, FuncEdge>) {
   const { nodes } = graph
   const trees = graphToTree(graph)
@@ -89,16 +99,15 @@ export default function buildCode(graph: IGraph<AnyNode, FuncEdge>) {
   // create function calls
   const codes = trees.map(tree =>
     foldTree(tree, (node, children: IntermediateCode[]) => {
-      if (isFuncNode(node.value)) {
-        return makeFuncNodeCode(node.value, node.value.id, children)
+      switch (node.value.type) {
+        case "FuncNode":
+          return makeFuncNodeCode(node.value, node.value.id, children)
+        case "ReferenceFuncNode":
+          const originNode = getOriginNode(node.value)
+          return makeFuncNodeCode(originNode, node.value.id, children)
+        case "VariableNode":
+          return makeVariableNodeCode(node.value)
       }
-
-      if (isReferenceFuncNode(node.value)) {
-        const originNode = getOriginNode(node.value)
-        return makeFuncNodeCode(originNode, node.value.id, children)
-      }
-
-      throw new Error("node not supported")
     })
   )
 

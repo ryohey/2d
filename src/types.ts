@@ -25,7 +25,17 @@ export const isReferenceFuncNode = (
 ): node is IReferenceFuncNode => node.type === "ReferenceFuncNode"
 
 export type AnyFuncNode = IFuncNode | IReferenceFuncNode
-export type AnyNode = AnyFuncNode
+
+export interface IVariableNode extends BaseNode<"VariableNode"> {
+  name: string
+  value: any
+  x: number
+  y: number
+}
+export const isVariableNode = (node: AnyNode): node is IVariableNode =>
+  node.type === "VariableNode"
+
+export type AnyNode = AnyFuncNode | IVariableNode
 
 export interface DisplayFuncNode extends IFuncNode {
   linked: boolean

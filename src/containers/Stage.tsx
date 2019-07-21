@@ -1,10 +1,18 @@
 import React, { MouseEvent, useState, SFC } from "react"
 import { FuncNode } from "./FuncNode"
-import { IPoint, IFuncNode, isReferenceFuncNode, isFuncNode } from "../types"
+import {
+  IPoint,
+  IFuncNode,
+  isReferenceFuncNode,
+  isFuncNode,
+  isVariableNode
+} from "../types"
 import { EditFuncModal } from "./EditFuncModal"
 import { GraphStore } from "../stores/GraphStore"
 import { DrawCanvas } from "../components/DrawCanvas"
 import { NodeId } from "../topology/Graph"
+import { VariableNode } from "./VariableNode"
+import { DropDownMenu } from "../components/DropDownMenu"
 
 interface ClickData {
   type: string
@@ -31,6 +39,7 @@ export const Stage: SFC<StageProps> = ({ graphStore }) => {
   const [blockElements, setBlockElements] = useState<{
     [id: number]: HTMLElement | undefined
   }>({})
+  const [menuPosition, setMenuPosition] = useState<IPoint | null>(null)
 
   const positionOfInput = (id: NodeId, index: number) => {
     const block = blockElements[id]
@@ -106,17 +115,36 @@ export const Stage: SFC<StageProps> = ({ graphStore }) => {
     }
   }
 
-  const onDoubleClickStage = (e: MouseEvent<any>) => {
-    setClick(null)
-    const bounds = e.currentTarget.getBoundingClientRect()
+  const addNewFuncNode = (x: number, y: number) => {
     graphStore.addNode({
       type: "FuncNode",
-      x: e.clientX - bounds.left,
-      y: e.clientY - bounds.top,
+      x,
+      y,
       name: "func",
       code: `x => x`,
       isAsync: false,
       id: -1
+    })
+  }
+
+  const addNewVariableNode = (x: number, y: number) => {
+    graphStore.addNode({
+      type: "VariableNode",
+      x,
+      y,
+      name: "variable",
+      id: -1,
+      value: ""
+    })
+  }
+
+  const onDoubleClickStage = (e: MouseEvent<any>) => {
+    setClick(null)
+
+    const bounds = e.currentTarget.getBoundingClientRect()
+    setMenuPosition({
+      x: e.clientX - bounds.left,
+      y: e.clientY - bounds.top
     })
   }
 
@@ -296,12 +324,7 @@ export const Stage: SFC<StageProps> = ({ graphStore }) => {
             onClickDupulicate={onClickBlockDupulicate}
             onClickRemove={onClickBlockRemove}
             onClickMakeReference={onClickBlockMakeReference}
-            {...b}
-            inputNames={b.inputNames}
-            name={b.name}
-            code={b.code}
-            linked={b.linked}
-            isAsync={b.isAsync}
+            node={b}
             key={b.id}
             containerRef={c => {
               if (c != null) {
@@ -312,19 +335,42 @@ export const Stage: SFC<StageProps> = ({ graphStore }) => {
           />
         )
       })}
+      {graphStore.nodes.filter(isVariableNode).map(node => (
+        <VariableNode node={node} key={node.id} />
+      ))}
       {previewNode && (
-        <FuncNode
-          linked={false}
-          key="preview"
-          isPreview={true}
-          {...previewNode}
-        />
+        <FuncNode key="preview" isPreview={true} node={previewNode} />
       )}
       {modalIsOpen && editingBlock !== null && (
         <EditFuncModal
           closeModal={closeModal}
           graphStore={graphStore}
           node={editingBlock}
+        />
+      )}
+      {menuPosition && (
+        <DropDownMenu
+          position={menuPosition}
+          items={[
+            {
+              name: "new function node",
+              onClick: e => {
+                const bounds = e.currentTarget.getBoundingClientRect()
+                addNewFuncNode(e.clientX - bounds.left, e.clientY - bounds.top)
+              }
+            },
+            {
+              name: "new variable node",
+              onClick: e => {
+                const bounds = e.currentTarget.getBoundingClientRect()
+                addNewVariableNode(
+                  e.clientX - bounds.left,
+                  e.clientY - bounds.top
+                )
+              }
+            }
+          ]}
+          onRequestClose={() => setMenuPosition(null)}
         />
       )}
     </div>

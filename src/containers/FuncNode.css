@@ -105,21 +105,3 @@
 .Block.preview .header {
   background: var(--secondary-text-color);
 }
-
-.Block .drop-down {
-  position: absolute;
-  background: var(--background-color);
-  padding: 0.5em 0em;
-  font-size: 90%;
-  width: 10em;
-  z-index: 100;
-  box-shadow: 0 2px 9px rgba(0, 0, 0, 0.24);
-}
-
-.Block .drop-down > div {
-  padding: 0.5em;
-}
-
-.Block .drop-down > div:hover {
-  background: var(--secondary-background-color);
-}

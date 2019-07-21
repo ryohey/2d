@@ -37,7 +37,8 @@ const RightPort: SFC<PortProps> = ({ name, onMouseDown, onMouseUp }) => {
   )
 }
 
-export type BlockProps = DisplayFuncNode & {
+export interface FuncNodeProps {
+  node: DisplayFuncNode
   isPreview?: boolean
   containerRef?: (c: HTMLElement | null) => void
   onMouseDownHeader?: (e: MouseEvent<any>, id: NodeId) => void
@@ -54,16 +55,9 @@ export type BlockProps = DisplayFuncNode & {
 
 const NOP = () => {}
 
-export const FuncNode: SFC<BlockProps> = ({
-  code,
-  name,
-  x,
-  y,
-  id,
-  linked,
-  isAsync,
+export const FuncNode: SFC<FuncNodeProps> = ({
+  node,
   isPreview,
-  inputNames,
   containerRef,
   onMouseDownHeader = NOP,
   onDoubleClickHeader = NOP,
@@ -80,15 +74,15 @@ export const FuncNode: SFC<BlockProps> = ({
 
   const classes = [
     "Block",
-    linked && "linked",
-    isAsync && "async",
+    node.linked && "linked",
+    node.isAsync && "async",
     isPreview && "preview"
   ]
 
   return (
     <div
       className={classes.filter(c => c).join(" ")}
-      style={{ left: x, top: y }}
+      style={{ left: node.x, top: node.y }}
       ref={c => {
         if (containerRef !== undefined) {
           containerRef(c)
@@ -97,15 +91,15 @@ export const FuncNode: SFC<BlockProps> = ({
     >
       <div
         className="header"
-        onMouseDown={e => onMouseDownHeader(e, id)}
+        onMouseDown={e => onMouseDownHeader(e, node.id)}
         onDoubleClick={e => {
           e.stopPropagation()
-          onDoubleClickHeader(e, id)
+          onDoubleClickHeader(e, node.id)
         }}
       >
         <div className="name">
-          {linked && <Icon name="link" className="link-icon" />}
-          {name}
+          {node.linked && <Icon name="link" className="link-icon" />}
+          {node.name}
         </div>
         <div
           className="menu-button"
@@ -123,36 +117,39 @@ export const FuncNode: SFC<BlockProps> = ({
           items={[
             {
               name: "make reference",
-              onClick: e => onClickMakeReference(e, id)
+              onClick: e => onClickMakeReference(e, node.id)
             },
-            { name: "duplicate", onClick: e => onClickDupulicate(e, id) },
-            { name: "remove", onClick: e => onClickRemove(e, id) }
+            { name: "duplicate", onClick: e => onClickDupulicate(e, node.id) },
+            { name: "remove", onClick: e => onClickRemove(e, node.id) }
           ]}
           onRequestClose={() => setIsMenuOpened(false)}
         />
       )}
       <div className="ports">
         <div className="inputs">
-          {inputNames.map((name, i) => (
+          {node.inputNames.map((name, i) => (
             <LeftPort
               name={name}
               key={i}
-              onMouseDown={e => onMouseDownInput(e, id, i)}
-              onMouseUp={e => onMouseUpInput(e, id, i)}
+              onMouseDown={e => onMouseDownInput(e, node.id, i)}
+              onMouseUp={e => onMouseUpInput(e, node.id, i)}
             />
           ))}
         </div>
         <div className="outputs">
           <RightPort
             name=""
-            onMouseDown={e => onMouseDownOutput(e, id)}
-            onMouseUp={e => onMouseUpOutput(e, id)}
+            onMouseDown={e => onMouseDownOutput(e, node.id)}
+            onMouseUp={e => onMouseUpOutput(e, node.id)}
           />
         </div>
       </div>
-      {!linked && (
-        <pre className="code" onDoubleClick={e => onDoubleClickBody(e, id)}>
-          {code}
+      {!node.linked && (
+        <pre
+          className="code"
+          onDoubleClick={e => onDoubleClickBody(e, node.id)}
+        >
+          {node.code}
         </pre>
       )}
     </div>

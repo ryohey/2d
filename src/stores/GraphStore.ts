@@ -13,9 +13,10 @@ import {
   FuncEdge
 } from "../types"
 import { NodeId } from "../topology/Graph"
+import { notEmpty } from "../helpers/typeHelper"
 
 export interface IGraphStore {
-  nodes: AnyFuncNode[]
+  nodes: AnyNode[]
   edges: FuncEdge[]
   previewNode: DisplayFuncNode | null
   previewEdge: PreviewEdge | null
@@ -49,13 +50,14 @@ export class GraphStore {
 
   getOriginFuncNode(id: NodeId): IFuncNode {
     const node = this.getNode(id)
-    if (isReferenceFuncNode(node)) {
-      return this.getOriginFuncNode(node.reference)
+    switch (node.type) {
+      case "FuncNode":
+        return node
+      case "ReferenceFuncNode":
+        return this.getOriginFuncNode(node.reference)
+      case "VariableNode":
+        throw new Error("origin node is not exist")
     }
-    if (isFuncNode(node)) {
-      return node
-    }
-    throw new Error("origin node is not exist")
   }
 
   /*
@@ -63,10 +65,10 @@ export class GraphStore {
     inputLength など表示に必要なプロパティが追加されている
     link 先を取得しなくても表示できるように name プロパティなども追加する
   */
-  getDisplayNode(id: NodeId): DisplayFuncNode {
+  getDisplayNode(id: NodeId): DisplayFuncNode | null {
     const node = this.getNode(id)
     if (!(isFuncNode(node) || isReferenceFuncNode(node))) {
-      throw new Error(`id ${id} is not func node`)
+      return null
     }
     const origin = this.getOriginFuncNode(id)
     return {
@@ -83,7 +85,7 @@ export class GraphStore {
   }
 
   allDisplayNodes(): DisplayFuncNode[] {
-    return this.nodes.map(b => this.getDisplayNode(b.id))
+    return this.nodes.map(b => this.getDisplayNode(b.id)).filter(notEmpty)
   }
 
   @action

@@ -179,21 +179,6 @@ export class GraphStore {
     this.edges = _.reject(this.edges, e => e.fromId === fromId)
   }
 
-  startDragFuncNode = (id: NodeId, x: number, y: number) => {
-    this.dragInfo = {
-      type: "block",
-      id,
-      startOffset: { x, y }
-    }
-  }
-
-  startDragOnNodeOutput = (id: NodeId) => {
-    this.dragInfo = {
-      type: "edge",
-      id
-    }
-  }
-
   dragMoveOnStage = (x: number, y: number) => {
     if (this.previewNode) {
       this.previewNode = {
@@ -220,12 +205,6 @@ export class GraphStore {
 
   endDragOnStage = () => {
     this.previewEdge = null
-
-    const { previewNode } = this
-    if (previewNode) {
-      this.previewNode = null
-      this.addNode(previewNode)
-    }
   }
 
   addNewFuncNode = (x: number, y: number) => {
@@ -237,6 +216,17 @@ export class GraphStore {
       code: `x => x`,
       isAsync: false,
       id: -1
+    })
+  }
+
+  addNewVariableNode = (x: number, y: number) => {
+    this.addNode({
+      type: "VariableNode",
+      x,
+      y,
+      name: "variable",
+      id: -1,
+      value: ""
     })
   }
 }

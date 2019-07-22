@@ -2,37 +2,23 @@ import React, { SFC } from "react"
 import { GraphStore } from "../stores/GraphStore"
 import { CodeStore } from "../stores/CodeStore"
 import Icon from "../components/Icon"
+import { DragTrigger } from "../components/Drag"
 
-export const ToolBox: SFC<{ graphStore: GraphStore; codeStore: CodeStore }> = ({
-  graphStore,
-  codeStore
-}) => (
+export const ToolBox: SFC<{ codeStore: CodeStore }> = ({ codeStore }) => (
   <div className="ToolBox">
     <div className="header">toolbox</div>
     {codeStore.codes.map((c, i) => (
-      <div
+      <DragTrigger
         key={i}
         className="item"
-        onMouseDown={e => {
-          e.stopPropagation()
-          const parent = e.currentTarget.parentElement
-          if (parent == null) {
-            return
-          }
-          const bounds = parent.getBoundingClientRect()
-          graphStore.previewNode = {
-            ...c,
-            x: e.clientX - bounds.width,
-            y: e.clientY - bounds.top,
-            linked: false,
-            id: -1,
-            type: "FuncNode"
-          }
+        data={{
+          code: c,
+          type: "ToolBoxItem"
         }}
       >
         <div className="name">{c.name}</div>
         <Icon name="arrow-top-right" />
-      </div>
+      </DragTrigger>
     ))}
   </div>
 )

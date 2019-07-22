@@ -1,6 +1,6 @@
 import { observable } from "mobx"
 
-interface Code {
+export interface Code {
   code: string
   name: string
   inputNames: string[]

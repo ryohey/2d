@@ -94,14 +94,7 @@ export const Stage: SFC<StageProps> = ({ graphStore }) => {
   }
 
   const addNewVariableNode = (x: number, y: number) => {
-    graphStore.addNode({
-      type: "VariableNode",
-      x,
-      y,
-      name: "variable",
-      id: -1,
-      value: ""
-    })
+    graphStore.addNewVariableNode(x, y)
   }
 
   const onDoubleClickStage = (e: MouseEvent<any>) => {
@@ -112,50 +105,15 @@ export const Stage: SFC<StageProps> = ({ graphStore }) => {
     })
   }
 
-  const onMouseDownStage = (e: DragBeginEvent) => {}
-
-  const onMouseMoveStage = (e: DragMoveEvent) => {
-    if (e.start === null) {
-      return
-    }
-    if (e.start.type === "FuncNodeHeader") {
-      graphStore.updateNode(e.start.node.id, b => ({
-        ...b,
-        x: e.movement.x + e.start.node.x,
-        y: e.movement.y + e.start.node.y
-      }))
-    }
-  }
-
-  const onMouseUpStage = (e: DragEndEvent) => {
-    if (e.start === null || e.end === null) {
-      return
-    }
-    if (e.start.type === "FuncNodeOutput" && e.end.type === "FuncNodeInput") {
-      graphStore.addEdge(e.start.node.id, e.end.node.id, e.end.index)
-    }
-    // 同じポートでドラッグした場合はエッジを削除
-    if (
-      e.start.type === "FuncNodeOutput" &&
-      e.end.type === "FuncNodeOutput" &&
-      e.start.node.id === e.end.node.id
-    ) {
-      graphStore.removeEdge(e.start.node.id)
-    }
-  }
-
   const closeModal = () => {
     graphStore.editingNode = null
   }
 
   return (
-    <DragContainer
+    <div
       onDoubleClick={onDoubleClickStage}
-      onMouseDown={onMouseDownStage}
-      onMouseUp={onMouseUpStage}
-      onMouseDragMove={onMouseMoveStage}
       className="Stage"
-      onMount={setContainer}
+      ref={setContainer}
     >
       {container !== null && (
         <DrawCanvas
@@ -226,6 +184,6 @@ export const Stage: SFC<StageProps> = ({ graphStore }) => {
           onRequestClose={() => setMenuPosition(null)}
         />
       )}
-    </DragContainer>
+    </div>
   )
 }

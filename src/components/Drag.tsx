@@ -10,11 +10,13 @@ export interface DragBeginEvent extends DragEvent {
 }
 
 export interface DragMoveEvent extends DragEvent {
+  startPosition: IPoint
   movement: IPoint
   start: any | null
 }
 
 export interface DragEndEvent extends DragEvent {
+  startPosition: IPoint
   movement: IPoint | null
   start: any | null
   end: any | null
@@ -50,7 +52,7 @@ type DivPropsWithoutMouse = Omit<
 
 export type DragContainerProps = DivPropsWithoutMouse &
   MouseHandler & {
-    onMount: (instance: HTMLDivElement | null) => void
+    onMount?: (instance: HTMLDivElement | null) => void
   }
 
 export const DragContainer: SFC<DragContainerProps> = props => {
@@ -99,6 +101,7 @@ export const DragTrigger: SFC<DragTriggerProps> = props => {
         if (state.handler !== null && state.startPosition !== null) {
           state.handler.onMouseDragMove({
             originEvent: e,
+            startPosition: state.startPosition,
             movement: {
               x: e.clientX - state.startPosition.x,
               y: e.clientY - state.startPosition.y
@@ -117,6 +120,7 @@ export const DragTrigger: SFC<DragTriggerProps> = props => {
           })
           state.handler.onMouseUp({
             originEvent: e,
+            startPosition: state.startPosition,
             movement: {
               x: e.clientX - state.startPosition.x,
               y: e.clientY - state.startPosition.y

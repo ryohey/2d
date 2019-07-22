@@ -1,4 +1,11 @@
-import React, { SFC, createContext, useState, useContext } from "react"
+import React, {
+  SFC,
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  useRef
+} from "react"
 import { IPoint } from "../types"
 
 export interface DragEvent {
@@ -31,6 +38,7 @@ export interface MouseHandler {
 interface DragState {
   startData: any | null
   startPosition: IPoint | null
+  container: HTMLDivElement | null
   handler: MouseHandler | null
 }
 
@@ -40,6 +48,7 @@ export const DragContext = createContext<
   {
     startData: null,
     startPosition: null,
+    container: null,
     handler: null
   },
   () => {}
@@ -60,23 +69,47 @@ export const DragContainer: SFC<DragContainerProps> = props => {
   const [state, setState] = useState<DragState>({
     startData: null,
     startPosition: null,
+    container: null,
     handler: { onMouseDown, onMouseDragMove, onMouseUp }
+  })
+  const divRef = useRef(null)
+  useEffect(() => {
+    setState({
+      ...state,
+      container: divRef.current
+    })
   })
   return (
     <DragContext.Provider value={[state, setState]}>
-      <DragTrigger {...props} data={null} />
+      <DragTrigger {...props} data={null} onMount={divRef} />
     </DragContext.Provider>
   )
 }
 
 export type DragTriggerProps = DivPropsWithoutMouse & {
   data: any
-  onMount?: (instance: HTMLDivElement | null) => void
+  onMount?: React.ClassAttributes<HTMLDivElement>["ref"]
 }
 
 export const DragTrigger: SFC<DragTriggerProps> = props => {
   const { data, onMount } = props
   const [state, setState] = useContext(DragContext)
+
+  const getRelativePosition = (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => {
+    const offset =
+      state.container !== null
+        ? {
+            x: state.container.offsetLeft,
+            y: state.container.offsetTop
+          }
+        : { x: 0, y: 0 }
+    return {
+      x: e.pageX - offset.x,
+      y: e.pageY - offset.y
+    }
+  }
 
   return (
     <div
@@ -88,7 +121,7 @@ export const DragTrigger: SFC<DragTriggerProps> = props => {
           setState({
             ...state,
             startData: data,
-            startPosition: { x: e.clientX, y: e.clientY }
+            startPosition: getRelativePosition(e)
           })
           state.handler.onMouseDown({
             originEvent: e,
@@ -99,12 +132,13 @@ export const DragTrigger: SFC<DragTriggerProps> = props => {
       onMouseMove={e => {
         e.stopPropagation()
         if (state.handler !== null && state.startPosition !== null) {
+          const pos = getRelativePosition(e)
           state.handler.onMouseDragMove({
             originEvent: e,
             startPosition: state.startPosition,
             movement: {
-              x: e.clientX - state.startPosition.x,
-              y: e.clientY - state.startPosition.y
+              x: pos.x - state.startPosition.x,
+              y: pos.y - state.startPosition.y
             },
             start: state.startData
           })
@@ -112,18 +146,23 @@ export const DragTrigger: SFC<DragTriggerProps> = props => {
       }}
       onMouseUp={e => {
         e.stopPropagation()
-        if (state.handler !== null && state.startPosition !== null) {
+        if (
+          state.handler !== null &&
+          state.startPosition !== null &&
+          state.container !== null
+        ) {
           setState({
             ...state,
             startData: null,
             startPosition: null
           })
+          const pos = getRelativePosition(e)
           state.handler.onMouseUp({
             originEvent: e,
             startPosition: state.startPosition,
             movement: {
-              x: e.clientX - state.startPosition.x,
-              y: e.clientY - state.startPosition.y
+              x: pos.x - state.startPosition.x,
+              y: pos.y - state.startPosition.y
             },
             start: state.startData,
             end: data

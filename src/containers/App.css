@@ -50,6 +50,7 @@ input[type="checkbox"] {
 }
 
 .App > .main > .content {
+  position: relative;
   display: flex;
   flex-grow: 1;
   flex-direction: column;
@@ -187,6 +188,12 @@ input[type="checkbox"] {
   flex-direction: column;
   display: flex;
   align-items: stretch;
+  position: absolute;
+  z-index: 100;
+  right: 0;
+  top: 0;
+  border: 1px solid #1a1b1d;
+  box-shadow: 0 1px 1rem 0px rgba(0, 0, 0, 0.2);
 }
 
 .ToolBox .header {

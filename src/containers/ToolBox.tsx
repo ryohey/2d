@@ -1,5 +1,4 @@
 import React, { SFC } from "react"
-import { GraphStore } from "../stores/GraphStore"
 import { CodeStore } from "../stores/CodeStore"
 import Icon from "../components/Icon"
 import { DragTrigger } from "../components/Drag"

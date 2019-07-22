@@ -24,7 +24,9 @@ export const ToolBox: SFC<{ graphStore: GraphStore; codeStore: CodeStore }> = ({
             ...c,
             x: e.clientX - bounds.width,
             y: e.clientY - bounds.top,
-            inputNames: c.inputLength
+            linked: false,
+            id: -1,
+            type: "FuncNode"
           }
         }}
       >

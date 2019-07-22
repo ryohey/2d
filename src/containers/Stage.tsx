@@ -112,22 +112,36 @@ export const Stage: SFC<StageProps> = ({ graphStore }) => {
     })
   }
 
-  const onMouseDownStage = (e: DragBeginEvent) => {
-    console.log(e)
-  }
+  const onMouseDownStage = (e: DragBeginEvent) => {}
 
   const onMouseMoveStage = (e: DragMoveEvent) => {
-    console.log(e)
-    const bounds = e.originEvent.currentTarget.getBoundingClientRect()
-    graphStore.dragMoveOnStage(
-      e.originEvent.clientX - bounds.left,
-      e.originEvent.clientY - bounds.top
-    )
+    if (e.start === null) {
+      return
+    }
+    if (e.start.type === "FuncNodeHeader") {
+      graphStore.updateNode(e.start.node.id, b => ({
+        ...b,
+        x: e.movement.x + e.start.node.x,
+        y: e.movement.y + e.start.node.y
+      }))
+    }
   }
 
   const onMouseUpStage = (e: DragEndEvent) => {
-    console.log(e)
-    graphStore.endDragOnStage()
+    if (e.start === null || e.end === null) {
+      return
+    }
+    if (e.start.type === "FuncNodeOutput" && e.end.type === "FuncNodeInput") {
+      graphStore.addEdge(e.start.node.id, e.end.node.id, e.end.index)
+    }
+    // 同じポートでドラッグした場合はエッジを削除
+    if (
+      e.start.type === "FuncNodeOutput" &&
+      e.end.type === "FuncNodeOutput" &&
+      e.start.node.id === e.end.node.id
+    ) {
+      graphStore.removeEdge(e.start.node.id)
+    }
   }
 
   const closeModal = () => {

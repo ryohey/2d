@@ -1,41 +1,31 @@
-import React, { SFC, MouseEvent, useState } from "react"
+import React, { SFC, useState } from "react"
 import Icon from "../components/Icon"
 import "./FuncNode.css"
 import { DisplayFuncNode } from "../types"
 import { DropDownMenu } from "../components/DropDownMenu"
-import { NodeId } from "../topology/Graph"
 import { GraphStore } from "../stores/GraphStore"
 import { DragTrigger } from "../components/Drag"
 
 export interface PortProps {
   name: string
-  onMouseDown: (e: MouseEvent<any>) => void
-  onMouseUp: (e: MouseEvent<any>) => void
+  dragData: any
 }
 
-const LeftPort: SFC<PortProps> = ({ name, onMouseDown, onMouseUp }) => {
+const LeftPort: SFC<PortProps> = ({ name, dragData }) => {
   return (
-    <div
-      className="Port LeftPort"
-      onMouseDown={onMouseDown}
-      onMouseUp={onMouseUp}
-    >
+    <DragTrigger data={dragData} className="Port LeftPort">
       <Icon name="arrow-right-drop-circle-outline" />
       <div className="label">{name}</div>
-    </div>
+    </DragTrigger>
   )
 }
 
-const RightPort: SFC<PortProps> = ({ name, onMouseDown, onMouseUp }) => {
+const RightPort: SFC<PortProps> = ({ name, dragData }) => {
   return (
-    <div
-      className="Port RightPort"
-      onMouseDown={onMouseDown}
-      onMouseUp={onMouseUp}
-    >
+    <DragTrigger data={dragData} className="Port RightPort">
       <div className="label">{name}</div>
       <Icon name="arrow-right-drop-circle-outline" />
-    </div>
+    </DragTrigger>
   )
 }
 
@@ -77,7 +67,7 @@ export const FuncNode: SFC<FuncNodeProps> = ({
     >
       <DragTrigger
         className="header"
-        data={node}
+        data={{ node, type: "FuncNodeHeader" }}
         onDoubleClick={e => {
           e.stopPropagation()
           openModal()
@@ -120,17 +110,12 @@ export const FuncNode: SFC<FuncNodeProps> = ({
             <LeftPort
               name={name}
               key={i}
-              onMouseDown={e => {}}
-              onMouseUp={e => graphStore.endDragOnNodeInput(node.id, i)}
+              dragData={{ node, index: i, type: "FuncNodeInput" }}
             />
           ))}
         </div>
         <div className="outputs">
-          <RightPort
-            name=""
-            onMouseDown={e => graphStore.startDragOnNodeOutput(node.id)}
-            onMouseUp={e => graphStore.endDragOnNodeOutput()}
-          />
+          <RightPort name="" dragData={{ node, type: "FuncNodeOutput" }} />
         </div>
       </div>
       {!node.linked && (

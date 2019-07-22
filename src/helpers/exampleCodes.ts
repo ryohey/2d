@@ -1,3 +1,5 @@
+import { getParamNames } from "./functionHelper"
+
 export default function() {
   const codes = [
     {
@@ -23,7 +25,7 @@ export default function() {
     const func = eval(`() => { return ${c.code} }`)()
     return {
       ...c,
-      inputLength: func.length
+      inputNames: getParamNames(func)
     }
   })
 }

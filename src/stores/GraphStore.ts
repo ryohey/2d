@@ -127,7 +127,8 @@ export class GraphStore {
       return []
     }
     const func = createFunction(node.code)
-    return getParamNames(func)
+    const names = getParamNames(func)
+    return names
   }
 
   getUniqueNodeName(requiredName: string = "") {
@@ -193,20 +194,6 @@ export class GraphStore {
     }
   }
 
-  endDragOnNodeOutput = () => {
-    if (this.dragInfo !== null && this.dragInfo.type === "edge") {
-      this.removeEdge(this.dragInfo.id)
-      this.dragInfo = null
-    }
-  }
-
-  endDragOnNodeInput = (id: NodeId, index: number) => {
-    if (this.dragInfo !== null && this.dragInfo.type === "edge") {
-      this.addEdge(this.dragInfo.id, id, index)
-      this.dragInfo = null
-    }
-  }
-
   dragMoveOnStage = (x: number, y: number) => {
     if (this.previewNode) {
       this.previewNode = {
@@ -222,23 +209,6 @@ export class GraphStore {
     }
 
     switch (this.dragInfo.type) {
-      case "block": {
-        const { startOffset, start } = this.dragInfo
-        if (startOffset === undefined || start === undefined) {
-          break
-        }
-        const delta = {
-          x: x - startOffset.x,
-          y: y - startOffset.y
-        }
-
-        this.updateNode(this.dragInfo.id, b => ({
-          ...b,
-          x: start.x + delta.x,
-          y: start.y + delta.y
-        }))
-        break
-      }
       case "edge": {
         this.previewEdge = {
           fromId: this.dragInfo.id,

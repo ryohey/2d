@@ -10,7 +10,7 @@ export interface DragBeginEvent extends DragEvent {
 }
 
 export interface DragMoveEvent extends DragEvent {
-  movement: IPoint | null
+  movement: IPoint
   start: any | null
 }
 

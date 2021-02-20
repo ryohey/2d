@@ -1,6 +1,6 @@
 import _ from "lodash"
-import { action, makeObservable, observable } from "mobx"
 import { atom } from "recoil"
+import { exampleGraph } from "../helpers/exampleGraph"
 import { createFunction, getParamNames } from "../helpers/functionHelper"
 import { notEmpty } from "../helpers/typeHelper"
 import { NodeId } from "../topology/Graph"
@@ -12,6 +12,7 @@ import {
   IFuncNode,
   isFuncNode,
   isReferenceFuncNode,
+  IVariableNode,
   PreviewEdge,
 } from "../types"
 
@@ -25,186 +26,196 @@ export const previewEdgeState = atom<PreviewEdge | null>({
   default: null,
 })
 
-export class GraphStore {
-  nodes: AnyNode[] = []
-  edges: FuncEdge[] = []
+export const nodesState = atom<AnyNode[]>({
+  key: "nodesState",
+  default: exampleGraph.nodes,
+})
 
-  editingNode: AnyNode | null = null
+export const edgesState = atom<FuncEdge[]>({
+  key: "edgesState",
+  default: exampleGraph.edges,
+})
 
-  constructor() {
-    makeObservable(this, {
-      nodes: observable,
-      edges: observable,
-      editingNode: observable,
-      addNode: action,
-      dupulicateNode: action,
-      createReferenceFuncNode: action,
-      removeNode: action,
-      updateNode: action,
-      addEdge: action,
-      removeEdge: action,
-    })
+export const editingNodeState = atom<AnyNode | null>({
+  key: "editingNodeState",
+  default: null,
+})
+
+export const getNode = (nodes: AnyNode[]) => (id: NodeId): AnyNode => {
+  const node = nodes.find((b) => b.id === id)
+  if (node === undefined) {
+    throw new Error(`node ${id} does not exist`)
   }
+  return node
+}
 
-  getNode(id: NodeId): AnyNode {
-    return this.nodes.filter((b) => b.id === id)[0]
+export const getFuncNode = (nodes: AnyNode[]) => (id: NodeId): AnyFuncNode => {
+  const node = getNode(nodes)(id)
+  if (!(isFuncNode(node) || isReferenceFuncNode(node))) {
+    throw new Error("node is not FuncNode")
   }
+  return node
+}
 
-  getFuncNode(id: NodeId): AnyFuncNode {
-    const node = this.getNode(id)
-    if (!(isFuncNode(node) || isReferenceFuncNode(node))) {
-      throw new Error("node is not FuncNode")
-    }
-    return node
+export const getOriginFuncNode = (nodes: AnyNode[]) => (
+  id: NodeId
+): IFuncNode => {
+  const node = getNode(nodes)(id)
+  switch (node.type) {
+    case "FuncNode":
+      return node
+    case "ReferenceFuncNode":
+      return getOriginFuncNode(nodes)(node.reference)
+    case "VariableNode":
+      throw new Error("origin node is not exist")
   }
+}
 
-  getOriginFuncNode(id: NodeId): IFuncNode {
-    const node = this.getNode(id)
-    switch (node.type) {
-      case "FuncNode":
-        return node
-      case "ReferenceFuncNode":
-        return this.getOriginFuncNode(node.reference)
-      case "VariableNode":
-        throw new Error("origin node is not exist")
-    }
-  }
-
-  /*
+/*
     表示用の node オブジェクトを取得する
     inputLength など表示に必要なプロパティが追加されている
     link 先を取得しなくても表示できるように name プロパティなども追加する
   */
-  getDisplayNode(id: NodeId): DisplayFuncNode | null {
-    const node = this.getNode(id)
-    if (!(isFuncNode(node) || isReferenceFuncNode(node))) {
-      return null
-    }
-    const origin = this.getOriginFuncNode(id)
-    return {
-      id: node.id,
-      type: "FuncNode",
-      x: node.x,
-      y: node.y,
-      linked: isReferenceFuncNode(node),
-      name: origin.name,
-      isAsync: origin.isAsync,
-      code: origin.code,
-      inputNames: this.getFuncNodeInputNames(id),
-    }
+export const getDisplayNode = (nodes: AnyNode[]) => (
+  id: NodeId
+): DisplayFuncNode | null => {
+  const node = getNode(nodes)(id)
+  if (node === undefined || !(isFuncNode(node) || isReferenceFuncNode(node))) {
+    return null
   }
-
-  allDisplayNodes(): DisplayFuncNode[] {
-    return this.nodes.map((b) => this.getDisplayNode(b.id)).filter(notEmpty)
-  }
-
-  addNode(node: AnyNode) {
-    this.nodes = [
-      ...this.nodes,
-      {
-        ...node,
-        id: this.lastNodeId() + 1,
-      },
-    ]
-  }
-
-  dupulicateNode(id: NodeId) {
-    const block = this.getFuncNode(id)
-    this.addNode({
-      ...block,
-      y: block.y + 180,
-    })
-  }
-
-  createReferenceFuncNode(id: NodeId) {
-    const block = this.getFuncNode(id)
-    const reference = isReferenceFuncNode(block) ? block.reference : id
-    this.addNode({
-      type: "ReferenceFuncNode",
-      reference,
-      x: block.x,
-      y: block.y + 180,
-      id: -1,
-    })
-  }
-
-  getFuncNodeInputNames(id: NodeId) {
-    let node = this.getNode(id)
-    if (isReferenceFuncNode(node)) {
-      node = this.getNode(node.reference)
-    }
-    if (!isFuncNode(node)) {
-      return []
-    }
-    const func = createFunction(node.code)
-    const names = getParamNames(func)
-    return names
-  }
-
-  getUniqueNodeName(requiredName: string = "") {
-    let name = requiredName
-    let count = 2
-    while (_.find(this.nodes, { name })) {
-      name = `${requiredName}${count}`
-      count++
-    }
-    return name
-  }
-
-  removeNode(id: NodeId) {
-    this.nodes = _.reject(this.nodes, (b) => b.id === id)
-    this.edges = _.reject(this.edges, (e) => e.toId === id || e.fromId === id)
-    this.nodes
-      .filter(isReferenceFuncNode)
-      .filter((b) => b.reference === id)
-      .forEach((b) => this.removeNode(b.id))
-  }
-
-  lastNodeId() {
-    const maxId = _.max(this.nodes.map((b) => b.id))
-    return maxId !== undefined ? maxId : -1
-  }
-
-  updateNode(id: NodeId, updater: (node: AnyNode) => AnyNode) {
-    this.nodes = this.nodes.map((b) => {
-      if (b.id !== id) {
-        return b
-      }
-      return updater(b)
-    })
-  }
-
-  addEdge(fromId: NodeId, toId: NodeId, toIndex: number) {
-    const edge = { fromId, toId, toIndex }
-    if (!_.find(this.edges, edge)) {
-      this.edges = [...this.edges, edge]
-    }
-  }
-
-  removeEdge(fromId: NodeId) {
-    this.edges = _.reject(this.edges, (e) => e.fromId === fromId)
-  }
-
-  addNewFuncNode = (x: number, y: number) => {
-    this.addNode({
-      type: "FuncNode",
-      x,
-      y,
-      name: "func",
-      code: `x => x`,
-      isAsync: false,
-      id: -1,
-    })
-  }
-
-  addNewVariableNode = (x: number, y: number) => {
-    this.addNode({
-      type: "VariableNode",
-      x,
-      y,
-      name: "variable",
-      id: -1,
-      value: "",
-    })
+  const origin = getOriginFuncNode(nodes)(id)
+  return {
+    id: node.id,
+    type: "FuncNode",
+    x: node.x,
+    y: node.y,
+    linked: isReferenceFuncNode(node),
+    name: origin.name,
+    isAsync: origin.isAsync,
+    code: origin.code,
+    inputNames: getFuncNodeInputNames(nodes)(id),
   }
 }
+
+export const allDisplayNodes = (nodes: AnyNode[]): DisplayFuncNode[] =>
+  nodes.map((b) => getDisplayNode(nodes)(b.id)).filter(notEmpty)
+
+export const addNode = (nodes: AnyNode[]) => (node: AnyNode) => [
+  ...nodes,
+  {
+    ...node,
+    id: lastNodeId(nodes) + 1,
+  },
+]
+
+export const dupulicateNode = (nodes: AnyNode[]) => (id: NodeId) => {
+  const block = getFuncNode(nodes)(id)
+  return addNode(nodes)({
+    ...block,
+    y: block.y + 180,
+  })
+}
+
+export const addReferenceFuncNode = (nodes: AnyNode[]) => (id: NodeId) => {
+  const block = getFuncNode(nodes)(id)
+  const reference = isReferenceFuncNode(block) ? block.reference : id
+  return addNode(nodes)({
+    type: "ReferenceFuncNode",
+    reference,
+    x: block.x,
+    y: block.y + 180,
+    id: -1,
+  })
+}
+
+export const getFuncNodeInputNames = (nodes: AnyNode[]) => (id: NodeId) => {
+  let node = getNode(nodes)(id)
+  if (node === undefined) {
+    return []
+  }
+  if (isReferenceFuncNode(node)) {
+    node = getNode(nodes)(node.reference)
+  }
+  if (node === undefined) {
+    return []
+  }
+  if (!isFuncNode(node)) {
+    return []
+  }
+  const func = createFunction(node.code)
+  const names = getParamNames(func)
+  return names
+}
+
+export const getUniqueNodeName = (nodes: AnyNode[]) => (
+  requiredName: string = ""
+) => {
+  let name = requiredName
+  let count = 2
+  while (_.find(nodes, { name })) {
+    name = `${requiredName}${count}`
+    count++
+  }
+  return name
+}
+
+export const removeNode = (nodes: AnyNode[]) => (id: NodeId) => {
+  _.reject(nodes, (b) => b.id === id)
+    .filter(isReferenceFuncNode)
+    .filter((b) => b.reference === id)
+    .forEach((b) => (nodes = removeNode(nodes)(b.id)))
+  return nodes
+}
+
+export const removeNodeFromEdges = (edges: FuncEdge[]) => (id: NodeId) =>
+  _.reject(edges, (e) => e.toId === id || e.fromId === id)
+
+export const lastNodeId = (nodes: AnyNode[]) => {
+  const maxId = _.max(nodes.map((b) => b.id))
+  return maxId !== undefined ? maxId : -1
+}
+
+export const updateNode = (nodes: AnyNode[]) => (
+  id: NodeId,
+  updater: (node: AnyNode) => AnyNode
+) =>
+  nodes.map((b) => {
+    if (b.id !== id) {
+      return b
+    }
+    return updater(b)
+  })
+
+export const addEdge = (edges: FuncEdge[]) => (
+  fromId: NodeId,
+  toId: NodeId,
+  toIndex: number
+) => {
+  const edge = { fromId, toId, toIndex }
+  if (!_.find(edges, edge)) {
+    return [...edges, edge]
+  }
+  return edges
+}
+
+export const removeEdge = (edges: FuncEdge[]) => (fromId: NodeId) =>
+  _.reject(edges, (e) => e.fromId === fromId)
+
+export const createFuncNode = (x: number, y: number): IFuncNode => ({
+  type: "FuncNode",
+  x,
+  y,
+  name: "func",
+  code: `x => x`,
+  isAsync: false,
+  id: -1,
+})
+
+export const createVariableNode = (x: number, y: number): IVariableNode => ({
+  type: "VariableNode",
+  x,
+  y,
+  name: "variable",
+  id: -1,
+  value: "",
+})

@@ -1,10 +1,18 @@
 import React, { FC, useState } from "react"
-import Icon from "../components/Icon"
-import "./FuncNode.css"
-import { DisplayFuncNode } from "../types"
-import { DropDownMenu } from "../components/DropDownMenu"
-import { GraphStore } from "../stores/GraphStore"
+import { useRecoilState } from "recoil"
 import { DragTrigger } from "../components/Drag"
+import { DropDownMenu } from "../components/DropDownMenu"
+import Icon from "../components/Icon"
+import {
+  addReferenceFuncNode,
+  dupulicateNode,
+  edgesState,
+  editingNodeState,
+  nodesState,
+  removeNode,
+} from "../stores/GraphStore"
+import { DisplayFuncNode } from "../types"
+import "./FuncNode.css"
 
 export interface PortProps {
   name: string
@@ -30,19 +38,20 @@ const RightPort: FC<PortProps> = ({ name, dragData }) => {
 }
 
 export interface FuncNodeProps {
-  graphStore: GraphStore
   node: DisplayFuncNode
   isPreview?: boolean
   containerRef?: (c: HTMLElement | null) => void
 }
 
 export const FuncNode: FC<FuncNodeProps> = ({
-  graphStore,
   node,
   isPreview,
   containerRef,
 }) => {
   const [isMenuOpened, setIsMenuOpened] = useState(false)
+  const [edges, setEdges] = useRecoilState(edgesState)
+  const [editingNode, setEditingNode] = useRecoilState(editingNodeState)
+  const [nodes, setNodes] = useRecoilState(nodesState)
 
   const classes = [
     "Block",
@@ -52,7 +61,7 @@ export const FuncNode: FC<FuncNodeProps> = ({
   ]
 
   const openModal = () => {
-    graphStore.editingNode = node
+    setEditingNode(node)
   }
 
   return (
@@ -93,13 +102,16 @@ export const FuncNode: FC<FuncNodeProps> = ({
           items={[
             {
               name: "make reference",
-              onClick: (e) => graphStore.createReferenceFuncNode(node.id),
+              onClick: (e) => setNodes(addReferenceFuncNode(nodes)(node.id)),
             },
             {
               name: "duplicate",
-              onClick: (e) => graphStore.dupulicateNode(node.id),
+              onClick: (e) => setNodes(dupulicateNode(nodes)(node.id)),
             },
-            { name: "remove", onClick: (e) => graphStore.removeNode(node.id) },
+            {
+              name: "remove",
+              onClick: (e) => setNodes(removeNode(nodes)(node.id)),
+            },
           ]}
           onRequestClose={() => setIsMenuOpened(false)}
         />

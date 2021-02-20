@@ -1,20 +1,23 @@
 import React, { FC } from "react"
+import { useRecoilState } from "recoil"
 import Icon from "../components/Icon"
-import { GraphStore } from "../stores/GraphStore"
 import buildCode from "../helpers/buildCode"
+import { edgesState, nodesState } from "../stores/GraphStore"
 
 export const Toolbar: FC<{
-  graphStore: GraphStore
   onClickHelp: () => void
-}> = ({ graphStore, onClickHelp }) => {
+}> = ({ onClickHelp }) => {
+  const [edges, setEdges] = useRecoilState(edgesState)
+  const [nodes, setNodes] = useRecoilState(nodesState)
+
   const onClickPlay = () => {
-    const code = buildCode(graphStore)
+    const code = buildCode({ edges, nodes })
     eval(code)
   }
 
   const onClickClear = () => {
-    graphStore.edges = []
-    graphStore.nodes = []
+    setEdges([])
+    setNodes([])
   }
 
   return (

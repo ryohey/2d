@@ -1,11 +1,10 @@
-import _ from "lodash"
 import React, {
   createContext,
-  useState,
+  FC,
   useContext,
   useEffect,
   useRef,
-  FC,
+  useState,
 } from "react"
 import { IPoint } from "../types"
 
@@ -40,11 +39,12 @@ interface DragState {
   startData: any | null
   startPosition: IPoint | null
   container: HTMLDivElement | null
-  handler: MouseHandler | null
 }
 
+type DragContextData = DragState & { handler: MouseHandler | null }
+
 export const DragContext = createContext<
-  [DragState, (state: DragState) => void]
+  [DragContextData, (state: DragContextData) => void]
 >([
   {
     startData: null,
@@ -77,7 +77,6 @@ export const DragContainer: FC<DragContainerProps> = (props) => {
     startData: null,
     startPosition: null,
     container: null,
-    handler: { onMouseDown, onMouseDragMove, onMouseUp },
   })
   const divRef = useRef(null)
   useEffect(() => {
@@ -87,7 +86,12 @@ export const DragContainer: FC<DragContainerProps> = (props) => {
     }))
   }, [])
   return (
-    <DragContext.Provider value={[state, setState]}>
+    <DragContext.Provider
+      value={[
+        { ...state, handler: { onMouseDown, onMouseDragMove, onMouseUp } },
+        setState,
+      ]}
+    >
       <DragTrigger data={null} onMount={divRef} {...restProps}>
         {children}
       </DragTrigger>

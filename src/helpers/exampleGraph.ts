@@ -17,7 +17,7 @@ export const exampleGraph: IGraph<AnyNode, FuncEdge> = {
       code: "() => 1000",
       x: 49,
       y: 165,
-      id: 8,
+      id: 1,
     },
     {
       type: "FuncNode",
@@ -27,7 +27,7 @@ export const exampleGraph: IGraph<AnyNode, FuncEdge> = {
       x: 183,
       y: 26,
       isAsync: true,
-      id: 7,
+      id: 2,
     },
     {
       type: "FuncNode",
@@ -35,7 +35,7 @@ export const exampleGraph: IGraph<AnyNode, FuncEdge> = {
       code: "() => 2",
       x: 367,
       y: 110,
-      id: 1,
+      id: 3,
     },
     {
       type: "FuncNode",
@@ -43,18 +43,18 @@ export const exampleGraph: IGraph<AnyNode, FuncEdge> = {
       code: "() => 2000",
       x: 377,
       y: 247,
-      id: 10,
+      id: 4,
     },
     {
       type: "ReferenceFuncNode",
       reference: 2,
       x: 518,
       y: 111,
-      id: 9,
+      id: 5,
     },
     {
       type: "FuncNode",
-      id: 11,
+      id: 6,
       x: 650.6666564941406,
       y: 26,
       name: "add",
@@ -66,7 +66,7 @@ export const exampleGraph: IGraph<AnyNode, FuncEdge> = {
       code: "str => alert(str)",
       x: 815,
       y: 27,
-      id: 3,
+      id: 7,
     },
   ],
   edges: [

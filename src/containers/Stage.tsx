@@ -1,9 +1,14 @@
 import React, { FC, MouseEvent, useState } from "react"
-import { useRecoilValue } from "recoil"
+import { useRecoilState, useRecoilValue } from "recoil"
 import { DrawCanvas } from "../components/DrawCanvas"
 import { DropDownMenu } from "../components/DropDownMenu"
 import {
-  GraphStore,
+  allDisplayNodes,
+  createFuncNode,
+  createVariableNode,
+  edgesState,
+  editingNodeState,
+  nodesState,
   previewEdgeState,
   previewNodeState,
 } from "../stores/GraphStore"
@@ -13,15 +18,14 @@ import { EditFuncModal } from "./EditFuncModal"
 import { FuncNode } from "./FuncNode"
 import { VariableNode } from "./VariableNode"
 
-export interface StageProps {
-  graphStore: GraphStore
-}
-
 export interface StageState {
   modalIsOpen: boolean
 }
 
-export const Stage: FC<StageProps> = ({ graphStore }) => {
+export const Stage: FC = () => {
+  const [edges, setEdges] = useRecoilState(edgesState)
+  const [editingNode, setEditingNode] = useRecoilState(editingNodeState)
+  const [nodes, setNodes] = useRecoilState(nodesState)
   const previewNode = useRecoilValue(previewNodeState)
   const previewEdge = useRecoilValue(previewEdgeState)
   const [container, setContainer] = useState<HTMLElement | null>(null)
@@ -59,7 +63,6 @@ export const Stage: FC<StageProps> = ({ graphStore }) => {
   }
 
   const renderEdges = (ctx: CanvasRenderingContext2D) => {
-    const { edges } = graphStore
     const { canvas } = ctx
 
     const renderCurve = (from: IPoint, to: IPoint) => {
@@ -94,7 +97,7 @@ export const Stage: FC<StageProps> = ({ graphStore }) => {
   }
 
   const addNewVariableNode = (x: number, y: number) => {
-    graphStore.addNewVariableNode(x, y)
+    setNodes([...nodes, createVariableNode(x, y)])
   }
 
   const onDoubleClickStage = (e: MouseEvent<any>) => {
@@ -106,7 +109,7 @@ export const Stage: FC<StageProps> = ({ graphStore }) => {
   }
 
   const closeModal = () => {
-    graphStore.editingNode = null
+    setEditingNode(null)
   }
 
   return (
@@ -122,10 +125,9 @@ export const Stage: FC<StageProps> = ({ graphStore }) => {
           height={container.clientHeight}
         />
       )}
-      {graphStore.allDisplayNodes().map((b) => {
+      {allDisplayNodes(nodes).map((b) => {
         return (
           <FuncNode
-            graphStore={graphStore}
             node={b}
             key={b.id}
             containerRef={(c) => {
@@ -137,25 +139,15 @@ export const Stage: FC<StageProps> = ({ graphStore }) => {
           />
         )
       })}
-      {graphStore.nodes.filter(isVariableNode).map((node) => (
+      {nodes.filter(isVariableNode).map((node) => (
         <VariableNode node={node} key={node.id} />
       ))}
       {previewNode && (
-        <FuncNode
-          graphStore={graphStore}
-          key="preview"
-          isPreview={true}
-          node={previewNode}
-        />
+        <FuncNode key="preview" isPreview={true} node={previewNode} />
       )}
-      {graphStore.editingNode !== null &&
-        graphStore.editingNode.type === "FuncNode" && (
-          <EditFuncModal
-            closeModal={closeModal}
-            graphStore={graphStore}
-            node={graphStore.editingNode}
-          />
-        )}
+      {editingNode !== null && editingNode.type === "FuncNode" && (
+        <EditFuncModal closeModal={closeModal} node={editingNode} />
+      )}
       {menuPosition && (
         <DropDownMenu
           position={menuPosition}
@@ -164,10 +156,13 @@ export const Stage: FC<StageProps> = ({ graphStore }) => {
               name: "new function node",
               onClick: (e) => {
                 const bounds = e.currentTarget.getBoundingClientRect()
-                graphStore.addNewFuncNode(
-                  e.clientX - bounds.left,
-                  e.clientY - bounds.top
-                )
+                setNodes([
+                  ...nodes,
+                  createFuncNode(
+                    e.clientX - bounds.left,
+                    e.clientY - bounds.top
+                  ),
+                ])
               },
             },
             {

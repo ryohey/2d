@@ -1,33 +1,32 @@
-import React, { FormEvent, FC, useState } from "react"
+import React, { FC, FormEvent, useState } from "react"
 import Modal from "react-modal"
-import { GraphStore } from "../stores/GraphStore"
+import { useRecoilState } from "recoil"
+import { nodesState, updateNode } from "../stores/GraphStore"
 import { IFuncNode } from "../types"
 
 export type ModalInput = Pick<IFuncNode, "id" | "name" | "code" | "isAsync">
 
 export interface EditFuncModalProps {
   closeModal: () => void
-  graphStore: GraphStore
   node: IFuncNode
 }
 
-export const EditFuncModal: FC<EditFuncModalProps> = ({
-  closeModal,
-  graphStore,
-  node,
-}) => {
+export const EditFuncModal: FC<EditFuncModalProps> = ({ closeModal, node }) => {
   const [modalInput, setModalInput] = useState<ModalInput>(node)
+  const [nodes, setNodes] = useRecoilState(nodesState)
 
   const onClickModalOK = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     e.stopPropagation()
     closeModal()
-    graphStore.updateNode(modalInput.id, (b) => ({
-      ...b,
-      name: modalInput.name,
-      code: modalInput.code,
-      isAsync: modalInput.isAsync,
-    }))
+    setNodes(
+      updateNode(nodes)(modalInput.id, (b) => ({
+        ...b,
+        name: modalInput.name,
+        code: modalInput.code,
+        isAsync: modalInput.isAsync,
+      }))
+    )
   }
 
   return (

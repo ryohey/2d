@@ -1,5 +1,5 @@
 import _ from "lodash"
-import { action, observable } from "mobx"
+import { action, observable, makeObservable } from "mobx";
 import { createFunction, getParamNames } from "../helpers/functionHelper"
 import {
   AnyFuncNode,
@@ -23,15 +23,32 @@ interface ClickData {
 }
 
 export class GraphStore {
-  @observable nodes: AnyNode[] = []
-  @observable edges: FuncEdge[] = []
+  nodes: AnyNode[] = [];
+  edges: FuncEdge[] = [];
 
-  @observable previewNode: DisplayFuncNode | null = null
-  @observable previewEdge: PreviewEdge | null = null
+  previewNode: DisplayFuncNode | null = null;
+  previewEdge: PreviewEdge | null = null;
 
-  @observable editingNode: AnyNode | null = null
+  editingNode: AnyNode | null = null;
 
   private dragInfo: ClickData | null = null
+
+  constructor() {
+    makeObservable(this, {
+      nodes: observable,
+      edges: observable,
+      previewNode: observable,
+      previewEdge: observable,
+      editingNode: observable,
+      addNode: action,
+      dupulicateNode: action,
+      createReferenceFuncNode: action,
+      removeNode: action,
+      updateNode: action,
+      addEdge: action,
+      removeEdge: action
+    });
+  }
 
   getNode(id: NodeId): AnyNode {
     return this.nodes.filter(b => b.id === id)[0]
@@ -85,7 +102,6 @@ export class GraphStore {
     return this.nodes.map(b => this.getDisplayNode(b.id)).filter(notEmpty)
   }
 
-  @action
   addNode(node: AnyNode) {
     this.nodes = [
       ...this.nodes,
@@ -96,7 +112,6 @@ export class GraphStore {
     ]
   }
 
-  @action
   dupulicateNode(id: NodeId) {
     const block = this.getFuncNode(id)
     this.addNode({
@@ -105,7 +120,6 @@ export class GraphStore {
     })
   }
 
-  @action
   createReferenceFuncNode(id: NodeId) {
     const block = this.getFuncNode(id)
     const reference = isReferenceFuncNode(block) ? block.reference : id
@@ -141,7 +155,6 @@ export class GraphStore {
     return name
   }
 
-  @action
   removeNode(id: NodeId) {
     this.nodes = _.reject(this.nodes, b => b.id === id)
     this.edges = _.reject(this.edges, e => e.toId === id || e.fromId === id)
@@ -156,7 +169,6 @@ export class GraphStore {
     return maxId !== undefined ? maxId : -1
   }
 
-  @action
   updateNode(id: NodeId, updater: (node: AnyNode) => AnyNode) {
     this.nodes = this.nodes.map(b => {
       if (b.id !== id) {
@@ -166,7 +178,6 @@ export class GraphStore {
     })
   }
 
-  @action
   addEdge(fromId: NodeId, toId: NodeId, toIndex: number) {
     const edge = { fromId, toId, toIndex }
     if (!_.find(this.edges, edge)) {
@@ -174,7 +185,6 @@ export class GraphStore {
     }
   }
 
-  @action
   removeEdge(fromId: NodeId) {
     this.edges = _.reject(this.edges, e => e.fromId === fromId)
   }

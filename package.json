@@ -25,6 +25,7 @@
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-modal": "^3.12.1",
+    "recoil": "github:facebookexperimental/Recoil#c6535d84f7c0fc41b7334f03414af140f746e6a2",
     "styled-components": "5.2.1"
   },
   "scripts": {

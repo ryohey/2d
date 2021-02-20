@@ -1,7 +1,7 @@
 import React, { FC } from "react"
-import { CodeStore } from "../stores/CodeStore"
-import Icon from "../components/Icon"
 import { DragTrigger } from "../components/Drag"
+import Icon from "../components/Icon"
+import { CodeStore } from "../stores/CodeStore"
 
 export const ToolBox: FC<{ codeStore: CodeStore }> = ({ codeStore }) => (
   <div className="ToolBox">

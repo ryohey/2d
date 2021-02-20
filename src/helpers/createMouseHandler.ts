@@ -13,24 +13,34 @@ export const createMouseHandler = (graphStore: GraphStore) => ({
     if (e.start === null) {
       return
     }
-    if (e.start.type === "FuncNodeHeader") {
-      graphStore.updateNode(e.start.node.id, (b) => ({
-        ...b,
-        x: e.movement.x + e.start.node.x,
-        y: e.movement.y + e.start.node.y,
-      }))
-    }
-
-    if (e.start.type === "ToolBoxItem") {
-      const code: Code = e.start.code
-      graphStore.previewNode = {
-        ...code,
-        id: 0,
-        type: "FuncNode",
-        linked: false,
-        x: e.startPosition.x + e.movement.x,
-        y: e.startPosition.y + e.movement.y,
-      }
+    switch (e.start.type) {
+      case "FuncNodeHeader":
+        graphStore.updateNode(e.start.node.id, (b) => ({
+          ...b,
+          x: e.movement.x + e.start.node.x,
+          y: e.movement.y + e.start.node.y,
+        }))
+        break
+      case "ToolBoxItem":
+        const code: Code = e.start.code
+        graphStore.previewNode = {
+          ...code,
+          id: 0,
+          type: "FuncNode",
+          linked: false,
+          x: e.startPosition.x + e.movement.x,
+          y: e.startPosition.y + e.movement.y,
+        }
+        break
+      case "FuncNodeOutput":
+        graphStore.previewEdge = {
+          fromId: e.start.node.id,
+          toPosition: {
+            x: e.startPosition.x + e.movement.x,
+            y: e.startPosition.y + e.movement.y,
+          },
+        }
+        break
     }
   },
 

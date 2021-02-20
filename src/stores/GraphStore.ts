@@ -31,8 +31,6 @@ export class GraphStore {
 
   editingNode: AnyNode | null = null
 
-  private dragInfo: ClickData | null = null
-
   constructor() {
     makeObservable(this, {
       nodes: observable,
@@ -187,30 +185,6 @@ export class GraphStore {
 
   removeEdge(fromId: NodeId) {
     this.edges = _.reject(this.edges, (e) => e.fromId === fromId)
-  }
-
-  dragMoveOnStage = (x: number, y: number) => {
-    if (this.previewNode) {
-      this.previewNode = {
-        ...this.previewNode,
-        x,
-        y,
-      }
-      return
-    }
-
-    if (this.dragInfo === null) {
-      return
-    }
-
-    switch (this.dragInfo.type) {
-      case "edge": {
-        this.previewEdge = {
-          fromId: this.dragInfo.id,
-          toPosition: { x, y },
-        }
-      }
-    }
   }
 
   endDragOnStage = () => {

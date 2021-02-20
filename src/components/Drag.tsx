@@ -1,10 +1,11 @@
+import _ from "lodash"
 import React, {
-  SFC,
   createContext,
   useState,
   useContext,
   useEffect,
-  useRef
+  useRef,
+  FC
 } from "react"
 import { IPoint } from "../types"
 
@@ -64,8 +65,8 @@ export type DragContainerProps = DivPropsWithoutMouse &
     onMount?: (instance: HTMLDivElement | null) => void
   }
 
-export const DragContainer: SFC<DragContainerProps> = props => {
-  const { onMouseDown, onMouseDragMove, onMouseUp } = props
+export const DragContainer: FC<DragContainerProps> = props => {
+  const { onMouseDown, onMouseDragMove, onMouseUp, children, ...restProps } = props
   const [state, setState] = useState<DragState>({
     startData: null,
     startPosition: null,
@@ -74,14 +75,16 @@ export const DragContainer: SFC<DragContainerProps> = props => {
   })
   const divRef = useRef(null)
   useEffect(() => {
-    setState({
+    setState((state) => ({
       ...state,
       container: divRef.current
-    })
-  })
+    }))
+  }, [])
   return (
     <DragContext.Provider value={[state, setState]}>
-      <DragTrigger {...props} data={null} onMount={divRef} />
+      <DragTrigger data={null} onMount={divRef} 
+      {...restProps}
+      >{children}</DragTrigger>
     </DragContext.Provider>
   )
 }
@@ -91,8 +94,8 @@ export type DragTriggerProps = DivPropsWithoutMouse & {
   onMount?: React.ClassAttributes<HTMLDivElement>["ref"]
 }
 
-export const DragTrigger: SFC<DragTriggerProps> = props => {
-  const { data, onMount } = props
+export const DragTrigger: FC<DragTriggerProps> = props => {
+  const { data, onMount, ...restProps } = props
   const [state, setState] = useContext(DragContext)
 
   const getRelativePosition = (
@@ -113,7 +116,7 @@ export const DragTrigger: SFC<DragTriggerProps> = props => {
 
   return (
     <div
-      {...props}
+      {...restProps}
       ref={onMount}
       onMouseDown={e => {
         e.stopPropagation()

@@ -1,4 +1,4 @@
-import React, { SFC, MouseEvent } from "react"
+import React, { FC, MouseEvent } from "react"
 import styled from "styled-components"
 import { IPoint } from "../types"
 
@@ -31,7 +31,7 @@ const Container = styled.div`
   }
 `
 
-export const DropDownMenu: SFC<DropDownMenuProps> = ({
+export const DropDownMenu: FC<DropDownMenuProps> = ({
   items,
   onRequestClose,
   position,

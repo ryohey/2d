@@ -1,9 +1,9 @@
-import React, { SFC } from "react"
+import React, { FC } from "react"
 import { CodeStore } from "../stores/CodeStore"
 import Icon from "../components/Icon"
 import { DragTrigger } from "../components/Drag"
 
-export const ToolBox: SFC<{ codeStore: CodeStore }> = ({ codeStore }) => (
+export const ToolBox: FC<{ codeStore: CodeStore }> = ({ codeStore }) => (
   <div className="ToolBox">
     <div className="header">toolbox</div>
     {codeStore.codes.map((c, i) => (

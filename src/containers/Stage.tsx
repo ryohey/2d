@@ -1,4 +1,4 @@
-import React, { MouseEvent, useState, SFC } from "react"
+import React, { MouseEvent, useState, FC } from "react"
 import { FuncNode } from "./FuncNode"
 import { IPoint, isVariableNode } from "../types"
 import { EditFuncModal } from "./EditFuncModal"
@@ -22,7 +22,7 @@ export interface StageState {
   modalIsOpen: boolean
 }
 
-export const Stage: SFC<StageProps> = ({ graphStore }) => {
+export const Stage: FC<StageProps> = ({ graphStore }) => {
   const { previewNode } = graphStore
   const [container, setContainer] = useState<HTMLElement | null>(null)
   const [blockElements, setBlockElements] = useState<{

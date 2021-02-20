@@ -1,4 +1,4 @@
-import React, { SFC, useState } from "react"
+import React, { FC, useState } from "react"
 import { observer } from "mobx-react"
 import { Stage as _Stage } from "./Stage"
 import { GraphStore } from "../stores/GraphStore"
@@ -34,7 +34,7 @@ const Stage = observer(_Stage)
 const CodeOutput = observer(_CodeOutput)
 const mouseHandler = createMouseHandler(graphStore)
 
-export const App: SFC<{}> = () => {
+export const App: FC<{}> = () => {
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false)
 
   return (

@@ -1,4 +1,4 @@
-import React, { SFC, useState } from "react"
+import React, { FC, useState } from "react"
 import Icon from "../components/Icon"
 import "./FuncNode.css"
 import { DisplayFuncNode } from "../types"
@@ -11,7 +11,7 @@ export interface PortProps {
   dragData: any
 }
 
-const LeftPort: SFC<PortProps> = ({ name, dragData }) => {
+const LeftPort: FC<PortProps> = ({ name, dragData }) => {
   return (
     <DragTrigger data={dragData} className="Port LeftPort">
       <Icon name="arrow-right-drop-circle-outline" />
@@ -20,7 +20,7 @@ const LeftPort: SFC<PortProps> = ({ name, dragData }) => {
   )
 }
 
-const RightPort: SFC<PortProps> = ({ name, dragData }) => {
+const RightPort: FC<PortProps> = ({ name, dragData }) => {
   return (
     <DragTrigger data={dragData} className="Port RightPort">
       <div className="label">{name}</div>
@@ -36,7 +36,7 @@ export interface FuncNodeProps {
   containerRef?: (c: HTMLElement | null) => void
 }
 
-export const FuncNode: SFC<FuncNodeProps> = ({
+export const FuncNode: FC<FuncNodeProps> = ({
   graphStore,
   node,
   isPreview,

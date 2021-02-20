@@ -1,4 +1,4 @@
-import React, { SFC } from "react"
+import React, { FC } from "react"
 
 import e from "../helpers/getElementType"
 import classnames from "classnames"
@@ -12,7 +12,7 @@ export interface IconProps {
   className?: string
 }
 
-const Icon: SFC<IconProps> = ({ component, name, className }) => {
+const Icon: FC<IconProps> = ({ component, name, className }) => {
   const ElementType = e(component)
   return (
     <ElementType

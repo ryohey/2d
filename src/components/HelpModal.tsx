@@ -1,4 +1,4 @@
-import React, { SFC } from "react"
+import React, { FC } from "react"
 import Modal from "react-modal"
 
 const HelpContent = () => (
@@ -26,7 +26,7 @@ export interface HelpModalProps {
   close: () => void
 }
 
-export const HelpModal: SFC<HelpModalProps> = ({ isOpen, close }) => (
+export const HelpModal: FC<HelpModalProps> = ({ isOpen, close }) => (
   <Modal
     contentLabel="help"
     isOpen={isOpen}

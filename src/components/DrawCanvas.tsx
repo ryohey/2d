@@ -1,4 +1,4 @@
-import React, { SFC, useState } from "react"
+import React, { FC, useState } from "react"
 
 export interface DrawCanvasProps {
   draw: (ctx: CanvasRenderingContext2D) => void
@@ -6,7 +6,7 @@ export interface DrawCanvasProps {
   height: number
 }
 
-export const DrawCanvas: SFC<DrawCanvasProps> = ({ draw, width, height }) => {
+export const DrawCanvas: FC<DrawCanvasProps> = ({ draw, width, height }) => {
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
 
   if (canvas !== null) {

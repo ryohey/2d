@@ -1,4 +1,4 @@
-import React, { FormEvent, SFC, useState } from "react"
+import React, { FormEvent, FC, useState } from "react"
 import Modal from "react-modal"
 import { GraphStore } from "../stores/GraphStore"
 import { IFuncNode } from "../types"
@@ -11,7 +11,7 @@ export interface EditFuncModalProps {
   node: IFuncNode
 }
 
-export const EditFuncModal: SFC<EditFuncModalProps> = ({
+export const EditFuncModal: FC<EditFuncModalProps> = ({
   closeModal,
   graphStore,
   node,

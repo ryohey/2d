@@ -1,9 +1,9 @@
-import React, { SFC } from "react"
+import React, { FC } from "react"
 import Icon from "../components/Icon"
 import { GraphStore } from "../stores/GraphStore"
 import buildCode from "../helpers/buildCode"
 
-export const Toolbar: SFC<{
+export const Toolbar: FC<{
   graphStore: GraphStore
   onClickHelp: () => void
 }> = ({ graphStore, onClickHelp }) => {

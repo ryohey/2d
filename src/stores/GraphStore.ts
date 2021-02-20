@@ -10,13 +10,14 @@ import {
   DisplayFuncNode,
   FuncEdge,
   IFuncNode,
+  IReferenceFuncNode,
   isFuncNode,
   isReferenceFuncNode,
   IVariableNode,
   PreviewEdge,
 } from "../types"
 
-export const getNode = (nodes: AnyNode[]) => (id: NodeId): AnyNode => {
+const getNode = (nodes: AnyNode[]) => (id: NodeId): AnyNode => {
   const node = nodes.find((b) => b.id === id)
   if (node === undefined) {
     throw new Error(`node ${id} does not exist`)
@@ -24,7 +25,7 @@ export const getNode = (nodes: AnyNode[]) => (id: NodeId): AnyNode => {
   return node
 }
 
-export const getFuncNode = (nodes: AnyNode[]) => (id: NodeId): AnyFuncNode => {
+const getFuncNode = (nodes: AnyNode[]) => (id: NodeId): AnyFuncNode => {
   const node = getNode(nodes)(id)
   if (!(isFuncNode(node) || isReferenceFuncNode(node))) {
     throw new Error("node is not FuncNode")
@@ -32,9 +33,7 @@ export const getFuncNode = (nodes: AnyNode[]) => (id: NodeId): AnyFuncNode => {
   return node
 }
 
-export const getOriginFuncNode = (nodes: AnyNode[]) => (
-  id: NodeId
-): IFuncNode => {
+const getOriginFuncNode = (nodes: AnyNode[]) => (id: NodeId): IFuncNode => {
   const node = getNode(nodes)(id)
   switch (node.type) {
     case "FuncNode":
@@ -106,20 +105,12 @@ export const getUniqueNodeName = (nodes: AnyNode[]) => (
   return name
 }
 
-const rejectNode = (nodes: AnyNode[]) => (id: NodeId) => {
-  _.reject(nodes, (b) => b.id === id)
-    .filter(isReferenceFuncNode)
-    .filter((b) => b.reference === id)
-    .forEach((b) => (nodes = rejectNode(nodes)(b.id)))
-  return nodes
-}
-
 export const lastNodeId = (nodes: AnyNode[]) => {
   const maxId = _.max(nodes.map((b) => b.id))
   return maxId !== undefined ? maxId : -1
 }
 
-const createFuncNode = (x: number, y: number): IFuncNode => ({
+export const createFuncNode = (x: number, y: number): IFuncNode => ({
   type: "FuncNode",
   x,
   y,
@@ -129,7 +120,7 @@ const createFuncNode = (x: number, y: number): IFuncNode => ({
   id: -1,
 })
 
-const createVariableNode = (x: number, y: number): IVariableNode => ({
+export const createVariableNode = (x: number, y: number): IVariableNode => ({
   type: "VariableNode",
   x,
   y,
@@ -137,6 +128,14 @@ const createVariableNode = (x: number, y: number): IVariableNode => ({
   id: -1,
   value: "",
 })
+
+const appendNode = (nodes: AnyNode[], node: Omit<AnyNode, "id">): AnyNode[] => [
+  ...nodes,
+  {
+    ...node,
+    id: lastNodeId(nodes) + 1,
+  } as AnyNode,
+]
 
 export const graphSlice = createSlice({
   name: "graph",
@@ -162,57 +161,29 @@ export const graphSlice = createSlice({
     setPreviewNode: (state, action: PayloadAction<DisplayFuncNode | null>) => {
       state.previewNode = action.payload
     },
-    addFuncNode: (state, action: PayloadAction<{ x: number; y: number }>) => {
-      state.current.nodes = [
-        ...state.current.nodes,
-        createFuncNode(action.payload.x, action.payload.y),
-      ]
-    },
-    addVariableNode: (
-      state,
-      action: PayloadAction<{ x: number; y: number }>
-    ) => {
-      state.current.nodes = [
-        ...state.current.nodes,
-        createVariableNode(action.payload.x, action.payload.y),
-      ]
-    },
     addNode: (state, action: PayloadAction<AnyNode>) => {
       const { nodes } = state.current
-      state.current.nodes = [
-        ...nodes,
-        {
-          ...action.payload,
-          id: lastNodeId(nodes) + 1,
-        },
-      ]
+      state.current.nodes = appendNode(nodes, action.payload)
     },
     dupulicateNode: (state, action: PayloadAction<NodeId>) => {
       const { nodes } = state.current
       const block = getFuncNode(nodes)(action.payload)
-      state.current.nodes = [
-        ...nodes,
-        {
-          ...block,
-          y: block.y + 180,
-        },
-      ]
+      state.current.nodes = appendNode(nodes, {
+        ...block,
+        y: block.y + 180,
+      })
     },
     addReferenceFuncNode: (state, action: PayloadAction<NodeId>) => {
       const { nodes } = state.current
       const id = action.payload
       const block = getFuncNode(nodes)(id)
       const reference = isReferenceFuncNode(block) ? block.reference : id
-      state.current.nodes = [
-        ...nodes,
-        {
-          type: "ReferenceFuncNode",
-          reference,
-          x: block.x,
-          y: block.y + 180,
-          id: -1,
-        },
-      ]
+      state.current.nodes = appendNode(nodes, {
+        type: "ReferenceFuncNode",
+        reference,
+        x: block.x,
+        y: block.y + 180,
+      } as IReferenceFuncNode)
     },
     updateNode: (
       state,
@@ -242,20 +213,27 @@ export const graphSlice = createSlice({
       }
     },
     removeNode: (state, action: PayloadAction<NodeId>) => {
-      state.current.nodes = rejectNode(state.current.nodes)(action.payload)
-    },
-    removeNodeFromEdges: (state, action: PayloadAction<NodeId>) => {
+      const { nodes } = state.current
       const id = action.payload
-      state.current.edges = _.reject(
-        state.current.edges,
-        (e) => e.toId === id || e.fromId === id
-      )
+      const node = getNode(nodes)(id)
+      const removeNodeIds = state.current.nodes
+        .filter(
+          (n) => n.id === id || (isReferenceFuncNode(n) && n.reference == id)
+        )
+        .map((n) => n.id)
+
+      state.current = {
+        nodes: state.current.nodes.filter((n) => !removeNodeIds.includes(n.id)),
+        edges: state.current.edges.filter(
+          (e) =>
+            !removeNodeIds.includes(e.fromId) && !removeNodeIds.includes(e.toId)
+        ),
+      }
     },
     removeEdge: (state, action: PayloadAction<NodeId>) => {
       const fromId = action.payload
-      state.current.edges = _.reject(
-        state.current.edges,
-        (e) => e.fromId === fromId
+      state.current.edges = state.current.edges.filter(
+        (e) => e.fromId !== fromId
       )
     },
   },
@@ -267,13 +245,10 @@ export const {
   setEditingNode,
   setPreviewEdge,
   setPreviewNode,
-  addFuncNode,
-  addVariableNode,
   addEdge,
   updateNode,
   removeNode,
   removeEdge,
-  removeNodeFromEdges,
   addNode,
   addReferenceFuncNode,
   dupulicateNode,

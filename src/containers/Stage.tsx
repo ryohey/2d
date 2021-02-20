@@ -3,9 +3,9 @@ import { DrawCanvas } from "../components/DrawCanvas"
 import { DropDownMenu } from "../components/DropDownMenu"
 import { useAppDispatch, useAppSelector } from "../hooks"
 import {
-  addFuncNode,
-  addVariableNode,
+  addNode,
   allDisplayNodes,
+  createFuncNode,
   setEditingNode,
 } from "../stores/GraphStore"
 import { NodeId } from "../topology/Graph"
@@ -151,25 +151,29 @@ export const Stage: FC = () => {
               onClick: (e) => {
                 const bounds = e.currentTarget.getBoundingClientRect()
                 dispatch(
-                  addFuncNode({
-                    x: e.clientX - bounds.left,
-                    y: e.clientY - bounds.top,
-                  })
+                  addNode(
+                    createFuncNode(
+                      e.clientX - bounds.left,
+                      e.clientY - bounds.top
+                    )
+                  )
                 )
               },
             },
-            {
+            /*{
               name: "new variable node",
               onClick: (e) => {
                 const bounds = e.currentTarget.getBoundingClientRect()
                 dispatch(
-                  addVariableNode({
-                    x: e.clientX - bounds.left,
-                    y: e.clientY - bounds.top,
-                  })
+                  addNode(
+                    createVariableNode(
+                      e.clientX - bounds.left,
+                      e.clientY - bounds.top
+                    )
+                  )
                 )
               },
-            },
+            },*/
           ]}
           onRequestClose={() => setMenuPosition(null)}
         />

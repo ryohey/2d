@@ -76,7 +76,7 @@ input[type="checkbox"] {
 
 .ToolbarButton {
   font-size: 110%;
-  padding: 0em 0.5em;
+  padding: 0.5em 1em;
   background: var(--background-color);
   margin-right: 1em;
   color: white;

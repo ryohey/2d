@@ -8,5 +8,8 @@ export const foldTree = <T, S>(
   tree: ITree<T>,
   fn: (node: ITree<T>, children: S[]) => S
 ): S => {
-  return fn(tree, tree.children.map(c => foldTree(c, fn)))
+  return fn(
+    tree,
+    tree.children.map((c) => foldTree(c, fn))
+  )
 }

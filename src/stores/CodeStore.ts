@@ -1,4 +1,4 @@
-import { observable, makeObservable } from "mobx";
+import { observable, makeObservable } from "mobx"
 
 export interface Code {
   code: string
@@ -7,11 +7,11 @@ export interface Code {
 }
 
 export class CodeStore {
-  codes: Code[] = [];
+  codes: Code[] = []
 
   constructor() {
     makeObservable(this, {
-      codes: observable
-    });
+      codes: observable,
+    })
   }
 }

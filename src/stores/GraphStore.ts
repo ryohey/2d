@@ -1,5 +1,5 @@
 import _ from "lodash"
-import { action, observable, makeObservable } from "mobx";
+import { action, observable, makeObservable } from "mobx"
 import { createFunction, getParamNames } from "../helpers/functionHelper"
 import {
   AnyFuncNode,
@@ -10,7 +10,7 @@ import {
   PreviewEdge,
   AnyNode,
   FuncEdge,
-  IPoint
+  IPoint,
 } from "../types"
 import { NodeId } from "../topology/Graph"
 import { notEmpty } from "../helpers/typeHelper"
@@ -23,13 +23,13 @@ interface ClickData {
 }
 
 export class GraphStore {
-  nodes: AnyNode[] = [];
-  edges: FuncEdge[] = [];
+  nodes: AnyNode[] = []
+  edges: FuncEdge[] = []
 
-  previewNode: DisplayFuncNode | null = null;
-  previewEdge: PreviewEdge | null = null;
+  previewNode: DisplayFuncNode | null = null
+  previewEdge: PreviewEdge | null = null
 
-  editingNode: AnyNode | null = null;
+  editingNode: AnyNode | null = null
 
   private dragInfo: ClickData | null = null
 
@@ -46,12 +46,12 @@ export class GraphStore {
       removeNode: action,
       updateNode: action,
       addEdge: action,
-      removeEdge: action
-    });
+      removeEdge: action,
+    })
   }
 
   getNode(id: NodeId): AnyNode {
-    return this.nodes.filter(b => b.id === id)[0]
+    return this.nodes.filter((b) => b.id === id)[0]
   }
 
   getFuncNode(id: NodeId): AnyFuncNode {
@@ -94,12 +94,12 @@ export class GraphStore {
       name: origin.name,
       isAsync: origin.isAsync,
       code: origin.code,
-      inputNames: this.getFuncNodeInputNames(id)
+      inputNames: this.getFuncNodeInputNames(id),
     }
   }
 
   allDisplayNodes(): DisplayFuncNode[] {
-    return this.nodes.map(b => this.getDisplayNode(b.id)).filter(notEmpty)
+    return this.nodes.map((b) => this.getDisplayNode(b.id)).filter(notEmpty)
   }
 
   addNode(node: AnyNode) {
@@ -107,8 +107,8 @@ export class GraphStore {
       ...this.nodes,
       {
         ...node,
-        id: this.lastNodeId() + 1
-      }
+        id: this.lastNodeId() + 1,
+      },
     ]
   }
 
@@ -116,7 +116,7 @@ export class GraphStore {
     const block = this.getFuncNode(id)
     this.addNode({
       ...block,
-      y: block.y + 180
+      y: block.y + 180,
     })
   }
 
@@ -128,7 +128,7 @@ export class GraphStore {
       reference,
       x: block.x,
       y: block.y + 180,
-      id: -1
+      id: -1,
     })
   }
 
@@ -156,21 +156,21 @@ export class GraphStore {
   }
 
   removeNode(id: NodeId) {
-    this.nodes = _.reject(this.nodes, b => b.id === id)
-    this.edges = _.reject(this.edges, e => e.toId === id || e.fromId === id)
+    this.nodes = _.reject(this.nodes, (b) => b.id === id)
+    this.edges = _.reject(this.edges, (e) => e.toId === id || e.fromId === id)
     this.nodes
       .filter(isReferenceFuncNode)
-      .filter(b => b.reference === id)
-      .forEach(b => this.removeNode(b.id))
+      .filter((b) => b.reference === id)
+      .forEach((b) => this.removeNode(b.id))
   }
 
   lastNodeId() {
-    const maxId = _.max(this.nodes.map(b => b.id))
+    const maxId = _.max(this.nodes.map((b) => b.id))
     return maxId !== undefined ? maxId : -1
   }
 
   updateNode(id: NodeId, updater: (node: AnyNode) => AnyNode) {
-    this.nodes = this.nodes.map(b => {
+    this.nodes = this.nodes.map((b) => {
       if (b.id !== id) {
         return b
       }
@@ -186,7 +186,7 @@ export class GraphStore {
   }
 
   removeEdge(fromId: NodeId) {
-    this.edges = _.reject(this.edges, e => e.fromId === fromId)
+    this.edges = _.reject(this.edges, (e) => e.fromId === fromId)
   }
 
   dragMoveOnStage = (x: number, y: number) => {
@@ -194,7 +194,7 @@ export class GraphStore {
       this.previewNode = {
         ...this.previewNode,
         x,
-        y
+        y,
       }
       return
     }
@@ -207,7 +207,7 @@ export class GraphStore {
       case "edge": {
         this.previewEdge = {
           fromId: this.dragInfo.id,
-          toPosition: { x, y }
+          toPosition: { x, y },
         }
       }
     }
@@ -225,7 +225,7 @@ export class GraphStore {
       name: "func",
       code: `x => x`,
       isAsync: false,
-      id: -1
+      id: -1,
     })
   }
 
@@ -236,7 +236,7 @@ export class GraphStore {
       y,
       name: "variable",
       id: -1,
-      value: ""
+      value: "",
     })
   }
 }

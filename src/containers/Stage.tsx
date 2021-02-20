@@ -11,7 +11,7 @@ import {
   DragContainer,
   DragMoveEvent,
   DragBeginEvent,
-  DragEndEvent
+  DragEndEvent,
 } from "../components/Drag"
 
 export interface StageProps {
@@ -35,12 +35,12 @@ export const Stage: SFC<StageProps> = ({ graphStore }) => {
     if (block === undefined) {
       return {
         x: 0,
-        y: 0
+        y: 0,
       }
     }
     return {
       x: block.offsetLeft,
-      y: block.offsetTop + 54 + 20 * index
+      y: block.offsetTop + 54 + 20 * index,
     }
   }
 
@@ -49,12 +49,12 @@ export const Stage: SFC<StageProps> = ({ graphStore }) => {
     if (block === undefined) {
       return {
         x: 0,
-        y: 0
+        y: 0,
       }
     }
     return {
       x: block.offsetLeft + block.clientWidth,
-      y: block.offsetTop + 54
+      y: block.offsetTop + 54,
     }
   }
 
@@ -101,7 +101,7 @@ export const Stage: SFC<StageProps> = ({ graphStore }) => {
     const bounds = e.currentTarget.getBoundingClientRect()
     setMenuPosition({
       x: e.clientX - bounds.left,
-      y: e.clientY - bounds.top
+      y: e.clientY - bounds.top,
     })
   }
 
@@ -122,13 +122,13 @@ export const Stage: SFC<StageProps> = ({ graphStore }) => {
           height={container.clientHeight}
         />
       )}
-      {graphStore.allDisplayNodes().map(b => {
+      {graphStore.allDisplayNodes().map((b) => {
         return (
           <FuncNode
             graphStore={graphStore}
             node={b}
             key={b.id}
-            containerRef={c => {
+            containerRef={(c) => {
               if (c != null) {
                 blockElements[b.id] = c
                 setBlockElements(blockElements)
@@ -137,7 +137,7 @@ export const Stage: SFC<StageProps> = ({ graphStore }) => {
           />
         )
       })}
-      {graphStore.nodes.filter(isVariableNode).map(node => (
+      {graphStore.nodes.filter(isVariableNode).map((node) => (
         <VariableNode node={node} key={node.id} />
       ))}
       {previewNode && (
@@ -162,24 +162,24 @@ export const Stage: SFC<StageProps> = ({ graphStore }) => {
           items={[
             {
               name: "new function node",
-              onClick: e => {
+              onClick: (e) => {
                 const bounds = e.currentTarget.getBoundingClientRect()
                 graphStore.addNewFuncNode(
                   e.clientX - bounds.left,
                   e.clientY - bounds.top
                 )
-              }
+              },
             },
             {
               name: "new variable node",
-              onClick: e => {
+              onClick: (e) => {
                 const bounds = e.currentTarget.getBoundingClientRect()
                 addNewVariableNode(
                   e.clientX - bounds.left,
                   e.clientY - bounds.top
                 )
-              }
-            }
+              },
+            },
           ]}
           onRequestClose={() => setMenuPosition(null)}
         />

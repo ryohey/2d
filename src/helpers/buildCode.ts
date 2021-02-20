@@ -5,7 +5,7 @@ import {
   AnyNode,
   AnyFuncNode,
   FuncEdge,
-  IVariableNode
+  IVariableNode,
 } from "../types"
 import { foldTree } from "../topology/Tree"
 import { graphToTree } from "../topology/graphToTree"
@@ -34,28 +34,30 @@ const makeFuncNodeCode = (
   const funcName = getFuncVarName(node)
   const varName = `${node.name}_out${nodeId}`
 
-  const promiseInputs = children.filter(c => c.isPromise).map(c => c.varName)
+  const promiseInputs = children
+    .filter((c) => c.isPromise)
+    .map((c) => c.varName)
   let code: string
 
   if (promiseInputs.length === 0) {
     code = `const ${varName} = ${funcName}(${children
-      .map(c => c.varName)
+      .map((c) => c.varName)
       .join(", ")})`
   } else {
     code = `const ${varName} = Promise.all([
       ${promiseInputs.join(", ")}
     ]).then(result => {
-      const [${promiseInputs.map(i => i + "_p").join(", ")}] = result
+      const [${promiseInputs.map((i) => i + "_p").join(", ")}] = result
       return ${funcName}(${children
-      .map(c => (c.isPromise ? c.varName + "_p" : c.varName))
+      .map((c) => (c.isPromise ? c.varName + "_p" : c.varName))
       .join(", ")})
     })`
   }
 
   return {
-    code: children.map(c => c.code).join("\n") + "\n" + code,
+    code: children.map((c) => c.code).join("\n") + "\n" + code,
     varName,
-    isPromise: node.isAsync || children.some(c => c.isPromise)
+    isPromise: node.isAsync || children.some((c) => c.isPromise),
   }
 }
 
@@ -64,7 +66,7 @@ const makeVariableNodeCode = (node: IVariableNode): IntermediateCode => {
   return {
     code: `const ${varName} = ${node.value.value}`,
     varName,
-    isPromise: false
+    isPromise: false,
   }
 }
 
@@ -74,7 +76,7 @@ export default function buildCode(graph: IGraph<AnyNode, FuncEdge>) {
 
   const functionCodes = nodes
     .filter(isFuncNode)
-    .map(node => {
+    .map((node) => {
       const varName = getFuncVarName(node)
       return `const ${varName} = ${node.code}`
     })
@@ -85,7 +87,7 @@ export default function buildCode(graph: IGraph<AnyNode, FuncEdge>) {
       case "FuncNode":
         return node
       case "ReferenceFuncNode":
-        const originNode = nodes.filter(n => n.id === node.reference)[0]
+        const originNode = nodes.filter((n) => n.id === node.reference)[0]
         if (isFuncNode(originNode)) {
           return originNode
         }
@@ -97,7 +99,7 @@ export default function buildCode(graph: IGraph<AnyNode, FuncEdge>) {
   }
 
   // create function calls
-  const codes = trees.map(tree =>
+  const codes = trees.map((tree) =>
     foldTree(tree, (node, children: IntermediateCode[]) => {
       switch (node.value.type) {
         case "FuncNode":
@@ -111,5 +113,5 @@ export default function buildCode(graph: IGraph<AnyNode, FuncEdge>) {
     })
   )
 
-  return functionCodes + "\n" + codes.map(c => c.code).join("\n")
+  return functionCodes + "\n" + codes.map((c) => c.code).join("\n")
 }

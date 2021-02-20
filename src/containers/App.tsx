@@ -17,7 +17,7 @@ import "./App.css"
 const graphStore = new GraphStore()
 const codeStore = new CodeStore()
 
-exampleGraph.nodes.forEach(b => graphStore.addNode(b))
+exampleGraph.nodes.forEach((b) => graphStore.addNode(b))
 graphStore.edges = exampleGraph.edges
 codeStore.codes = exampleCodes()
 

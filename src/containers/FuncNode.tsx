@@ -40,7 +40,7 @@ export const FuncNode: SFC<FuncNodeProps> = ({
   graphStore,
   node,
   isPreview,
-  containerRef
+  containerRef,
 }) => {
   const [isMenuOpened, setIsMenuOpened] = useState(false)
 
@@ -48,7 +48,7 @@ export const FuncNode: SFC<FuncNodeProps> = ({
     "Block",
     node.linked && "linked",
     node.isAsync && "async",
-    isPreview && "preview"
+    isPreview && "preview",
   ]
 
   const openModal = () => {
@@ -57,9 +57,9 @@ export const FuncNode: SFC<FuncNodeProps> = ({
 
   return (
     <div
-      className={classes.filter(c => c).join(" ")}
+      className={classes.filter((c) => c).join(" ")}
       style={{ left: node.x, top: node.y }}
-      ref={c => {
+      ref={(c) => {
         if (containerRef !== undefined) {
           containerRef(c)
         }
@@ -68,7 +68,7 @@ export const FuncNode: SFC<FuncNodeProps> = ({
       <DragTrigger
         className="header"
         data={{ node, type: "FuncNodeHeader" }}
-        onDoubleClick={e => {
+        onDoubleClick={(e) => {
           e.stopPropagation()
           openModal()
         }}
@@ -79,8 +79,8 @@ export const FuncNode: SFC<FuncNodeProps> = ({
         </div>
         <div
           className="menu-button"
-          onDoubleClick={e => e.stopPropagation()}
-          onClick={e => {
+          onDoubleClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
             e.stopPropagation()
             isMenuOpened ? setIsMenuOpened(false) : setIsMenuOpened(true)
           }}
@@ -93,13 +93,13 @@ export const FuncNode: SFC<FuncNodeProps> = ({
           items={[
             {
               name: "make reference",
-              onClick: e => graphStore.createReferenceFuncNode(node.id)
+              onClick: (e) => graphStore.createReferenceFuncNode(node.id),
             },
             {
               name: "duplicate",
-              onClick: e => graphStore.dupulicateNode(node.id)
+              onClick: (e) => graphStore.dupulicateNode(node.id),
             },
-            { name: "remove", onClick: e => graphStore.removeNode(node.id) }
+            { name: "remove", onClick: (e) => graphStore.removeNode(node.id) },
           ]}
           onRequestClose={() => setIsMenuOpened(false)}
         />

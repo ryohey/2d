@@ -5,9 +5,9 @@ const getRootNodes = <Node extends INode, Edge extends IEdge>(
   graph: IGraph<Node, Edge>
 ): Node[] =>
   graph.nodes.filter(
-    node =>
-      graph.edges.filter(edge => edge.fromId === node.id).length === 0 &&
-      graph.edges.filter(edge => edge.toId === node.id).length > 0
+    (node) =>
+      graph.edges.filter((edge) => edge.fromId === node.id).length === 0 &&
+      graph.edges.filter((edge) => edge.toId === node.id).length > 0
   )
 
 const makeTree = <Node extends INode, Edge extends IEdge>(
@@ -15,9 +15,9 @@ const makeTree = <Node extends INode, Edge extends IEdge>(
   rootNode: Node
 ): ITree<Node> => {
   const children = graph.edges
-    .filter(edge => edge.toId === rootNode.id)
-    .map(edge => {
-      const childNodes = graph.nodes.filter(node => node.id === edge.fromId)
+    .filter((edge) => edge.toId === rootNode.id)
+    .map((edge) => {
+      const childNodes = graph.nodes.filter((node) => node.id === edge.fromId)
       if (childNodes.length === 0) {
         throw new Error(`node id ${edge.fromId} is not exist`)
       }
@@ -30,10 +30,10 @@ const makeTree = <Node extends INode, Edge extends IEdge>(
 
   return {
     value: rootNode,
-    children
+    children,
   }
 }
 
 export const graphToTree = <Node extends INode, Edge extends IEdge>(
   graph: IGraph<Node, Edge>
-): ITree<Node>[] => getRootNodes(graph).map(n => makeTree(graph, n))
+): ITree<Node>[] => getRootNodes(graph).map((n) => makeTree(graph, n))

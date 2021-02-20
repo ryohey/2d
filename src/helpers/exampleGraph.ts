@@ -9,7 +9,7 @@ export const exampleGraph: IGraph<AnyNode, FuncEdge> = {
       code: "() => 1",
       x: 44,
       y: 26,
-      id: 0
+      id: 0,
     },
     {
       type: "FuncNode",
@@ -17,7 +17,7 @@ export const exampleGraph: IGraph<AnyNode, FuncEdge> = {
       code: "() => 1000",
       x: 49,
       y: 165,
-      id: 8
+      id: 8,
     },
     {
       type: "FuncNode",
@@ -27,7 +27,7 @@ export const exampleGraph: IGraph<AnyNode, FuncEdge> = {
       x: 183,
       y: 26,
       isAsync: true,
-      id: 7
+      id: 7,
     },
     {
       type: "FuncNode",
@@ -35,7 +35,7 @@ export const exampleGraph: IGraph<AnyNode, FuncEdge> = {
       code: "() => 2",
       x: 367,
       y: 110,
-      id: 1
+      id: 1,
     },
     {
       type: "FuncNode",
@@ -43,14 +43,14 @@ export const exampleGraph: IGraph<AnyNode, FuncEdge> = {
       code: "() => 2000",
       x: 377,
       y: 247,
-      id: 10
+      id: 10,
     },
     {
       type: "ReferenceFuncNode",
       reference: 2,
       x: 518,
       y: 111,
-      id: 9
+      id: 9,
     },
     {
       type: "FuncNode",
@@ -58,7 +58,7 @@ export const exampleGraph: IGraph<AnyNode, FuncEdge> = {
       x: 650.6666564941406,
       y: 26,
       name: "add",
-      code: "(a, b) => a + b"
+      code: "(a, b) => a + b",
     },
     {
       type: "FuncNode",
@@ -66,44 +66,44 @@ export const exampleGraph: IGraph<AnyNode, FuncEdge> = {
       code: "str => alert(str)",
       x: 815,
       y: 27,
-      id: 3
-    }
+      id: 3,
+    },
   ],
   edges: [
     {
       fromId: 0,
       toId: 2,
-      toIndex: 0
+      toIndex: 0,
     },
     {
       fromId: 1,
       toId: 2,
-      toIndex: 1
+      toIndex: 1,
     },
     {
       fromId: 3,
       toId: 5,
-      toIndex: 0
+      toIndex: 0,
     },
     {
       fromId: 4,
       toId: 5,
-      toIndex: 1
+      toIndex: 1,
     },
     {
       fromId: 5,
       toId: 6,
-      toIndex: 1
+      toIndex: 1,
     },
     {
       fromId: 2,
       toId: 6,
-      toIndex: 0
+      toIndex: 0,
     },
     {
       fromId: 6,
       toId: 7,
-      toIndex: 0
-    }
-  ]
+      toIndex: 0,
+    },
+  ],
 }

@@ -12,7 +12,7 @@ export const ToolBox: SFC<{ codeStore: CodeStore }> = ({ codeStore }) => (
         className="item"
         data={{
           code: c,
-          type: "ToolBoxItem"
+          type: "ToolBoxItem",
         }}
       >
         <div className="name">{c.name}</div>

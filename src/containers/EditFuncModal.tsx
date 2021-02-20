@@ -14,7 +14,7 @@ export interface EditFuncModalProps {
 export const EditFuncModal: SFC<EditFuncModalProps> = ({
   closeModal,
   graphStore,
-  node
+  node,
 }) => {
   const [modalInput, setModalInput] = useState<ModalInput>(node)
 
@@ -22,11 +22,11 @@ export const EditFuncModal: SFC<EditFuncModalProps> = ({
     e.preventDefault()
     e.stopPropagation()
     closeModal()
-    graphStore.updateNode(modalInput.id, b => ({
+    graphStore.updateNode(modalInput.id, (b) => ({
       ...b,
       name: modalInput.name,
       code: modalInput.code,
-      isAsync: modalInput.isAsync
+      isAsync: modalInput.isAsync,
     }))
   }
 
@@ -44,10 +44,10 @@ export const EditFuncModal: SFC<EditFuncModalProps> = ({
           <input
             type="text"
             value={modalInput.name}
-            onChange={e =>
+            onChange={(e) =>
               setModalInput({
                 ...modalInput,
-                name: e.target.value
+                name: e.target.value,
               })
             }
           />
@@ -56,10 +56,10 @@ export const EditFuncModal: SFC<EditFuncModalProps> = ({
           <label>code</label>
           <textarea
             value={modalInput.code}
-            onChange={e =>
+            onChange={(e) =>
               setModalInput({
                 ...modalInput,
-                code: e.target.value
+                code: e.target.value,
               })
             }
           />
@@ -70,10 +70,10 @@ export const EditFuncModal: SFC<EditFuncModalProps> = ({
             <input
               type="checkbox"
               checked={modalInput.isAsync}
-              onChange={e =>
+              onChange={(e) =>
                 setModalInput({
                   ...modalInput,
-                  isAsync: e.target.checked
+                  isAsync: e.target.checked,
                 })
               }
             />

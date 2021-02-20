@@ -14,10 +14,10 @@ export const createMouseHandler = (graphStore: GraphStore) => ({
       return
     }
     if (e.start.type === "FuncNodeHeader") {
-      graphStore.updateNode(e.start.node.id, b => ({
+      graphStore.updateNode(e.start.node.id, (b) => ({
         ...b,
         x: e.movement.x + e.start.node.x,
-        y: e.movement.y + e.start.node.y
+        y: e.movement.y + e.start.node.y,
       }))
     }
 
@@ -29,7 +29,7 @@ export const createMouseHandler = (graphStore: GraphStore) => ({
         type: "FuncNode",
         linked: false,
         x: e.startPosition.x + e.movement.x,
-        y: e.startPosition.y + e.movement.y
+        y: e.startPosition.y + e.movement.y,
       }
     }
   },
@@ -62,5 +62,5 @@ export const createMouseHandler = (graphStore: GraphStore) => ({
         }
       }
     }
-  }
+  },
 })

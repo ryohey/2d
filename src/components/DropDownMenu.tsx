@@ -34,7 +34,7 @@ const Container = styled.div`
 export const DropDownMenu: SFC<DropDownMenuProps> = ({
   items,
   onRequestClose,
-  position
+  position,
 }) => {
   return (
     <Container
@@ -44,7 +44,7 @@ export const DropDownMenu: SFC<DropDownMenuProps> = ({
     >
       {items.map((item, i) => (
         <div
-          onClick={e => {
+          onClick={(e) => {
             onRequestClose()
             item.onClick(e)
           }}

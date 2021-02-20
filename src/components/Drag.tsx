@@ -5,7 +5,7 @@ import React, {
   useContext,
   useEffect,
   useRef,
-  FC
+  FC,
 } from "react"
 import { IPoint } from "../types"
 
@@ -50,9 +50,9 @@ export const DragContext = createContext<
     startData: null,
     startPosition: null,
     container: null,
-    handler: null
+    handler: null,
   },
-  () => {}
+  () => {},
 ])
 
 type DivPropsWithoutMouse = Omit<
@@ -65,26 +65,32 @@ export type DragContainerProps = DivPropsWithoutMouse &
     onMount?: (instance: HTMLDivElement | null) => void
   }
 
-export const DragContainer: FC<DragContainerProps> = props => {
-  const { onMouseDown, onMouseDragMove, onMouseUp, children, ...restProps } = props
+export const DragContainer: FC<DragContainerProps> = (props) => {
+  const {
+    onMouseDown,
+    onMouseDragMove,
+    onMouseUp,
+    children,
+    ...restProps
+  } = props
   const [state, setState] = useState<DragState>({
     startData: null,
     startPosition: null,
     container: null,
-    handler: { onMouseDown, onMouseDragMove, onMouseUp }
+    handler: { onMouseDown, onMouseDragMove, onMouseUp },
   })
   const divRef = useRef(null)
   useEffect(() => {
     setState((state) => ({
       ...state,
-      container: divRef.current
+      container: divRef.current,
     }))
   }, [])
   return (
     <DragContext.Provider value={[state, setState]}>
-      <DragTrigger data={null} onMount={divRef} 
-      {...restProps}
-      >{children}</DragTrigger>
+      <DragTrigger data={null} onMount={divRef} {...restProps}>
+        {children}
+      </DragTrigger>
     </DragContext.Provider>
   )
 }
@@ -94,7 +100,7 @@ export type DragTriggerProps = DivPropsWithoutMouse & {
   onMount?: React.ClassAttributes<HTMLDivElement>["ref"]
 }
 
-export const DragTrigger: FC<DragTriggerProps> = props => {
+export const DragTrigger: FC<DragTriggerProps> = (props) => {
   const { data, onMount, ...restProps } = props
   const [state, setState] = useContext(DragContext)
 
@@ -105,12 +111,12 @@ export const DragTrigger: FC<DragTriggerProps> = props => {
       state.container !== null
         ? {
             x: state.container.offsetLeft,
-            y: state.container.offsetTop
+            y: state.container.offsetTop,
           }
         : { x: 0, y: 0 }
     return {
       x: e.pageX - offset.x,
-      y: e.pageY - offset.y
+      y: e.pageY - offset.y,
     }
   }
 
@@ -118,21 +124,21 @@ export const DragTrigger: FC<DragTriggerProps> = props => {
     <div
       {...restProps}
       ref={onMount}
-      onMouseDown={e => {
+      onMouseDown={(e) => {
         e.stopPropagation()
         if (state.handler !== null) {
           setState({
             ...state,
             startData: data,
-            startPosition: getRelativePosition(e)
+            startPosition: getRelativePosition(e),
           })
           state.handler.onMouseDown({
             originEvent: e,
-            start: data
+            start: data,
           })
         }
       }}
-      onMouseMove={e => {
+      onMouseMove={(e) => {
         e.stopPropagation()
         if (state.handler !== null && state.startPosition !== null) {
           const pos = getRelativePosition(e)
@@ -141,13 +147,13 @@ export const DragTrigger: FC<DragTriggerProps> = props => {
             startPosition: state.startPosition,
             movement: {
               x: pos.x - state.startPosition.x,
-              y: pos.y - state.startPosition.y
+              y: pos.y - state.startPosition.y,
             },
-            start: state.startData
+            start: state.startData,
           })
         }
       }}
-      onMouseUp={e => {
+      onMouseUp={(e) => {
         e.stopPropagation()
         if (
           state.handler !== null &&
@@ -157,7 +163,7 @@ export const DragTrigger: FC<DragTriggerProps> = props => {
           setState({
             ...state,
             startData: null,
-            startPosition: null
+            startPosition: null,
           })
           const pos = getRelativePosition(e)
           state.handler.onMouseUp({
@@ -165,10 +171,10 @@ export const DragTrigger: FC<DragTriggerProps> = props => {
             startPosition: state.startPosition,
             movement: {
               x: pos.x - state.startPosition.x,
-              y: pos.y - state.startPosition.y
+              y: pos.y - state.startPosition.y,
             },
             start: state.startData,
-            end: data
+            end: data,
           })
         }
       }}

@@ -1,25 +1,20 @@
-import React, { FC, useState } from "react"
 import { observer } from "mobx-react"
-import { Stage as _Stage } from "./Stage"
-import { GraphStore } from "../stores/GraphStore"
-import { CodeStore } from "../stores/CodeStore"
-import buildCode from "../helpers/buildCode"
-import { exampleGraph } from "../helpers/exampleGraph"
-import exampleCodes from "../helpers/exampleCodes"
-import { HelpModal } from "../components/HelpModal"
-import { ToolBox } from "./ToolBox"
-import { Toolbar } from "./Toolbar"
+import React, { FC, useState } from "react"
 import { DragContainer } from "../components/Drag"
-import { createMouseHandler } from "../helpers/createMouseHandler"
-
+import { HelpModal } from "../components/HelpModal"
+import buildCode from "../helpers/buildCode"
+import { useMouseHandler } from "../helpers/createMouseHandler"
+import { exampleGraph } from "../helpers/exampleGraph"
+import { GraphStore } from "../stores/GraphStore"
 import "./App.css"
+import { Stage as _Stage } from "./Stage"
+import { Toolbar } from "./Toolbar"
+import { ToolBox } from "./ToolBox"
 
 const graphStore = new GraphStore()
-const codeStore = new CodeStore()
 
 exampleGraph.nodes.forEach((b) => graphStore.addNode(b))
 graphStore.edges = exampleGraph.edges
-codeStore.codes = exampleCodes()
 
 function _CodeOutput({ graphStore }: { graphStore: GraphStore }) {
   const code = buildCode(graphStore)
@@ -32,10 +27,10 @@ function _CodeOutput({ graphStore }: { graphStore: GraphStore }) {
 
 const Stage = observer(_Stage)
 const CodeOutput = observer(_CodeOutput)
-const mouseHandler = createMouseHandler(graphStore)
 
 export const App: FC<{}> = () => {
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false)
+  const mouseHandler = useMouseHandler(graphStore)
 
   return (
     <div className="App">

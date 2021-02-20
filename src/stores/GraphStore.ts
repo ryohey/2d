@@ -1,33 +1,30 @@
 import _ from "lodash"
-import { action, observable, makeObservable } from "mobx"
+import { action, makeObservable, observable } from "mobx"
+import { atom } from "recoil"
 import { createFunction, getParamNames } from "../helpers/functionHelper"
+import { notEmpty } from "../helpers/typeHelper"
+import { NodeId } from "../topology/Graph"
 import {
   AnyFuncNode,
+  AnyNode,
   DisplayFuncNode,
+  FuncEdge,
   IFuncNode,
   isFuncNode,
   isReferenceFuncNode,
-  PreviewEdge,
-  AnyNode,
-  FuncEdge,
-  IPoint,
+  PreviewEdge
 } from "../types"
-import { NodeId } from "../topology/Graph"
-import { notEmpty } from "../helpers/typeHelper"
 
-interface ClickData {
-  type: string
-  id: NodeId
-  start?: IPoint
-  startOffset?: IPoint
-}
+export const previewEdgeState = atom<PreviewEdge | null>({
+  key: "previewEdgeState",
+  default: null,
+})
 
 export class GraphStore {
   nodes: AnyNode[] = []
   edges: FuncEdge[] = []
 
   previewNode: DisplayFuncNode | null = null
-  previewEdge: PreviewEdge | null = null
 
   editingNode: AnyNode | null = null
 
@@ -36,7 +33,6 @@ export class GraphStore {
       nodes: observable,
       edges: observable,
       previewNode: observable,
-      previewEdge: observable,
       editingNode: observable,
       addNode: action,
       dupulicateNode: action,
@@ -185,10 +181,6 @@ export class GraphStore {
 
   removeEdge(fromId: NodeId) {
     this.edges = _.reject(this.edges, (e) => e.fromId === fromId)
-  }
-
-  endDragOnStage = () => {
-    this.previewEdge = null
   }
 
   addNewFuncNode = (x: number, y: number) => {

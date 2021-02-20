@@ -1,50 +1,57 @@
-import { DragBeginEvent, DragMoveEvent, DragEndEvent } from "../components/Drag"
-import { GraphStore } from "../stores/GraphStore"
+import { useCallback } from "react"
+import { useSetRecoilState } from "recoil"
+import { DragBeginEvent, DragEndEvent, DragMoveEvent } from "../components/Drag"
 import { Code } from "../stores/CodeStore"
+import { GraphStore, previewEdgeState } from "../stores/GraphStore"
 
-export const createMouseHandler = (graphStore: GraphStore) => ({
-  onMouseDown(e: DragBeginEvent) {
+export const useMouseHandler = (graphStore: GraphStore) => {
+  const setPreviewEdge = useSetRecoilState(previewEdgeState)
+
+  const onMouseDown = useCallback((e: DragBeginEvent) => {
     if (e.start === null) {
       return
     }
-  },
+  }, [])
 
-  onMouseDragMove(e: DragMoveEvent) {
-    if (e.start === null) {
-      return
-    }
-    switch (e.start.type) {
-      case "FuncNodeHeader":
-        graphStore.updateNode(e.start.node.id, (b) => ({
-          ...b,
-          x: e.movement.x + e.start.node.x,
-          y: e.movement.y + e.start.node.y,
-        }))
-        break
-      case "ToolBoxItem":
-        const code: Code = e.start.code
-        graphStore.previewNode = {
-          ...code,
-          id: 0,
-          type: "FuncNode",
-          linked: false,
-          x: e.startPosition.x + e.movement.x,
-          y: e.startPosition.y + e.movement.y,
-        }
-        break
-      case "FuncNodeOutput":
-        graphStore.previewEdge = {
-          fromId: e.start.node.id,
-          toPosition: {
+  const onMouseDragMove = useCallback(
+    (e: DragMoveEvent) => {
+      if (e.start === null) {
+        return
+      }
+      switch (e.start.type) {
+        case "FuncNodeHeader":
+          graphStore.updateNode(e.start.node.id, (b) => ({
+            ...b,
+            x: e.movement.x + e.start.node.x,
+            y: e.movement.y + e.start.node.y,
+          }))
+          break
+        case "ToolBoxItem":
+          const code: Code = e.start.code
+          graphStore.previewNode = {
+            ...code,
+            id: 0,
+            type: "FuncNode",
+            linked: false,
             x: e.startPosition.x + e.movement.x,
             y: e.startPosition.y + e.movement.y,
-          },
-        }
-        break
-    }
-  },
+          }
+          break
+        case "FuncNodeOutput":
+          setPreviewEdge({
+            fromId: e.start.node.id,
+            toPosition: {
+              x: e.startPosition.x + e.movement.x,
+              y: e.startPosition.y + e.movement.y,
+            },
+          })
+          break
+      }
+    },
+    [graphStore, setPreviewEdge]
+  )
 
-  onMouseUp(e: DragEndEvent) {
+  const onMouseUp = useCallback((e: DragEndEvent) => {
     console.log(e)
     if (e.start !== null) {
       if (e.end !== null) {
@@ -72,5 +79,11 @@ export const createMouseHandler = (graphStore: GraphStore) => ({
         }
       }
     }
-  },
-})
+  }, [])
+
+  return {
+    onMouseDown,
+    onMouseDragMove,
+    onMouseUp,
+  }
+}

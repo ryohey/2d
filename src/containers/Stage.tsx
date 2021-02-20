@@ -1,18 +1,13 @@
-import React, { MouseEvent, useState, FC } from "react"
-import { FuncNode } from "./FuncNode"
+import React, { FC, MouseEvent, useState } from "react"
+import { useRecoilValue } from "recoil"
+import { DrawCanvas } from "../components/DrawCanvas"
+import { DropDownMenu } from "../components/DropDownMenu"
+import { GraphStore, previewEdgeState } from "../stores/GraphStore"
+import { NodeId } from "../topology/Graph"
 import { IPoint, isVariableNode } from "../types"
 import { EditFuncModal } from "./EditFuncModal"
-import { GraphStore } from "../stores/GraphStore"
-import { DrawCanvas } from "../components/DrawCanvas"
-import { NodeId } from "../topology/Graph"
+import { FuncNode } from "./FuncNode"
 import { VariableNode } from "./VariableNode"
-import { DropDownMenu } from "../components/DropDownMenu"
-import {
-  DragContainer,
-  DragMoveEvent,
-  DragBeginEvent,
-  DragEndEvent,
-} from "../components/Drag"
 
 export interface StageProps {
   graphStore: GraphStore
@@ -24,6 +19,7 @@ export interface StageState {
 
 export const Stage: FC<StageProps> = ({ graphStore }) => {
   const { previewNode } = graphStore
+  const previewEdge = useRecoilValue(previewEdgeState)
   const [container, setContainer] = useState<HTMLElement | null>(null)
   const [blockElements, setBlockElements] = useState<{
     [id: number]: HTMLElement | undefined
@@ -59,7 +55,7 @@ export const Stage: FC<StageProps> = ({ graphStore }) => {
   }
 
   const renderEdges = (ctx: CanvasRenderingContext2D) => {
-    const { edges, previewEdge } = graphStore
+    const { edges } = graphStore
     const { canvas } = ctx
 
     const renderCurve = (from: IPoint, to: IPoint) => {

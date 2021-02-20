@@ -1,18 +1,16 @@
 import React, { FC, useState } from "react"
-import { useRecoilValue } from "recoil"
 import { DragContainer } from "../components/Drag"
 import { HelpModal } from "../components/HelpModal"
 import buildCode from "../helpers/buildCode"
 import { useMouseHandler } from "../helpers/createMouseHandler"
-import { edgesState, nodesState } from "../stores/GraphStore"
+import { useAppSelector } from "../hooks"
 import "./App.css"
 import { Stage } from "./Stage"
 import { Toolbar } from "./Toolbar"
 import { ToolBox } from "./ToolBox"
 
 function CodeOutput() {
-  const edges = useRecoilValue(edgesState)
-  const nodes = useRecoilValue(nodesState)
+  const { edges, nodes } = useAppSelector((state) => state.graph.current)
   const code = buildCode({ edges, nodes })
   return (
     <div className="CodeOutput">

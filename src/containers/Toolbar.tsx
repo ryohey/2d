@@ -1,23 +1,23 @@
 import React, { FC } from "react"
-import { useRecoilState } from "recoil"
 import Icon from "../components/Icon"
 import buildCode from "../helpers/buildCode"
-import { edgesState, nodesState } from "../stores/GraphStore"
+import { useAppDispatch, useAppSelector } from "../hooks"
+import { setEdges, setNodes } from "../stores/GraphStore"
 
 export const Toolbar: FC<{
   onClickHelp: () => void
 }> = ({ onClickHelp }) => {
-  const [edges, setEdges] = useRecoilState(edgesState)
-  const [nodes, setNodes] = useRecoilState(nodesState)
+  const graph = useAppSelector((state) => state.graph.current)
+  const dispatch = useAppDispatch()
 
   const onClickPlay = () => {
-    const code = buildCode({ edges, nodes })
+    const code = buildCode(graph)
     eval(code)
   }
 
   const onClickClear = () => {
-    setEdges([])
-    setNodes([])
+    dispatch(setEdges([]))
+    dispatch(setNodes([]))
   }
 
   return (

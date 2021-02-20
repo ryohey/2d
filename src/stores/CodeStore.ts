@@ -1,4 +1,4 @@
-import { atom } from "recoil"
+import { createSlice } from "@reduxjs/toolkit"
 import exampleCodes from "../helpers/exampleCodes"
 
 export interface Code {
@@ -7,7 +7,8 @@ export interface Code {
   inputNames: string[]
 }
 
-export const codeState = atom<Code[]>({
-  key: "codeState",
-  default: exampleCodes(),
+export const codeSlice = createSlice({
+  name: "code",
+  initialState: exampleCodes() as Code[],
+  reducers: {},
 })

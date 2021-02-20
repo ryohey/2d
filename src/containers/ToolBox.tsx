@@ -1,11 +1,10 @@
 import React, { FC } from "react"
-import { useRecoilValue } from "recoil"
 import { DragTrigger } from "../components/Drag"
 import Icon from "../components/Icon"
-import { codeState } from "../stores/CodeStore"
+import { useAppSelector } from "../hooks"
 
 export const ToolBox: FC = () => {
-  const codes = useRecoilValue(codeState)
+  const codes = useAppSelector((state) => state.codes)
 
   return (
     <div className="ToolBox">

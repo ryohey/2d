@@ -1,15 +1,13 @@
 import React, { FC, useState } from "react"
-import { useRecoilState } from "recoil"
 import { DragTrigger } from "../components/Drag"
 import { DropDownMenu } from "../components/DropDownMenu"
 import Icon from "../components/Icon"
+import { useAppDispatch } from "../hooks"
 import {
   addReferenceFuncNode,
   dupulicateNode,
-  edgesState,
-  editingNodeState,
-  nodesState,
   removeNode,
+  setEditingNode,
 } from "../stores/GraphStore"
 import { DisplayFuncNode } from "../types"
 import "./FuncNode.css"
@@ -49,9 +47,7 @@ export const FuncNode: FC<FuncNodeProps> = ({
   containerRef,
 }) => {
   const [isMenuOpened, setIsMenuOpened] = useState(false)
-  const [edges, setEdges] = useRecoilState(edgesState)
-  const [editingNode, setEditingNode] = useRecoilState(editingNodeState)
-  const [nodes, setNodes] = useRecoilState(nodesState)
+  const dispatch = useAppDispatch()
 
   const classes = [
     "Block",
@@ -61,7 +57,7 @@ export const FuncNode: FC<FuncNodeProps> = ({
   ]
 
   const openModal = () => {
-    setEditingNode(node)
+    dispatch(setEditingNode(node))
   }
 
   return (
@@ -102,15 +98,15 @@ export const FuncNode: FC<FuncNodeProps> = ({
           items={[
             {
               name: "make reference",
-              onClick: (e) => setNodes(addReferenceFuncNode(nodes)(node.id)),
+              onClick: (e) => dispatch(addReferenceFuncNode(node.id)),
             },
             {
               name: "duplicate",
-              onClick: (e) => setNodes(dupulicateNode(nodes)(node.id)),
+              onClick: (e) => dispatch(dupulicateNode(node.id)),
             },
             {
               name: "remove",
-              onClick: (e) => setNodes(removeNode(nodes)(node.id)),
+              onClick: (e) => dispatch(removeNode(node.id)),
             },
           ]}
           onRequestClose={() => setIsMenuOpened(false)}

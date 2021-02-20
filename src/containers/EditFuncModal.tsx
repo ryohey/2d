@@ -1,7 +1,7 @@
 import React, { FC, FormEvent, useState } from "react"
 import Modal from "react-modal"
-import { useRecoilState } from "recoil"
-import { nodesState, updateNode } from "../stores/GraphStore"
+import { useAppDispatch } from "../hooks"
+import { updateNode } from "../stores/GraphStore"
 import { IFuncNode } from "../types"
 
 export type ModalInput = Pick<IFuncNode, "id" | "name" | "code" | "isAsync">
@@ -13,19 +13,22 @@ export interface EditFuncModalProps {
 
 export const EditFuncModal: FC<EditFuncModalProps> = ({ closeModal, node }) => {
   const [modalInput, setModalInput] = useState<ModalInput>(node)
-  const [nodes, setNodes] = useRecoilState(nodesState)
+  const dispatch = useAppDispatch()
 
   const onClickModalOK = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     e.stopPropagation()
     closeModal()
-    setNodes(
-      updateNode(nodes)(modalInput.id, (b) => ({
-        ...b,
-        name: modalInput.name,
-        code: modalInput.code,
-        isAsync: modalInput.isAsync,
-      }))
+    dispatch(
+      updateNode({
+        id: modalInput.id,
+        updater: (b) => ({
+          ...b,
+          name: modalInput.name,
+          code: modalInput.code,
+          isAsync: modalInput.isAsync,
+        }),
+      })
     )
   }
 

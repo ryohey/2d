@@ -1,16 +1,12 @@
 import React, { FC, MouseEvent, useState } from "react"
-import { useRecoilState, useRecoilValue } from "recoil"
 import { DrawCanvas } from "../components/DrawCanvas"
 import { DropDownMenu } from "../components/DropDownMenu"
+import { useAppDispatch, useAppSelector } from "../hooks"
 import {
+  addFuncNode,
+  addVariableNode,
   allDisplayNodes,
-  createFuncNode,
-  createVariableNode,
-  edgesState,
-  editingNodeState,
-  nodesState,
-  previewEdgeState,
-  previewNodeState,
+  setEditingNode,
 } from "../stores/GraphStore"
 import { NodeId } from "../topology/Graph"
 import { IPoint, isVariableNode } from "../types"
@@ -23,11 +19,13 @@ export interface StageState {
 }
 
 export const Stage: FC = () => {
-  const [edges, setEdges] = useRecoilState(edgesState)
-  const [editingNode, setEditingNode] = useRecoilState(editingNodeState)
-  const [nodes, setNodes] = useRecoilState(nodesState)
-  const previewNode = useRecoilValue(previewNodeState)
-  const previewEdge = useRecoilValue(previewEdgeState)
+  const {
+    current: { nodes, edges },
+    previewNode,
+    editingNode,
+    previewEdge,
+  } = useAppSelector((state) => state.graph)
+  const dispatch = useAppDispatch()
   const [container, setContainer] = useState<HTMLElement | null>(null)
   const [blockElements, setBlockElements] = useState<{
     [id: number]: HTMLElement | undefined
@@ -96,10 +94,6 @@ export const Stage: FC = () => {
     }
   }
 
-  const addNewVariableNode = (x: number, y: number) => {
-    setNodes([...nodes, createVariableNode(x, y)])
-  }
-
   const onDoubleClickStage = (e: MouseEvent<any>) => {
     const bounds = e.currentTarget.getBoundingClientRect()
     setMenuPosition({
@@ -109,7 +103,7 @@ export const Stage: FC = () => {
   }
 
   const closeModal = () => {
-    setEditingNode(null)
+    dispatch(setEditingNode(null))
   }
 
   return (
@@ -156,22 +150,23 @@ export const Stage: FC = () => {
               name: "new function node",
               onClick: (e) => {
                 const bounds = e.currentTarget.getBoundingClientRect()
-                setNodes([
-                  ...nodes,
-                  createFuncNode(
-                    e.clientX - bounds.left,
-                    e.clientY - bounds.top
-                  ),
-                ])
+                dispatch(
+                  addFuncNode({
+                    x: e.clientX - bounds.left,
+                    y: e.clientY - bounds.top,
+                  })
+                )
               },
             },
             {
               name: "new variable node",
               onClick: (e) => {
                 const bounds = e.currentTarget.getBoundingClientRect()
-                addNewVariableNode(
-                  e.clientX - bounds.left,
-                  e.clientY - bounds.top
+                dispatch(
+                  addVariableNode({
+                    x: e.clientX - bounds.left,
+                    y: e.clientY - bounds.top,
+                  })
                 )
               },
             },

@@ -218,14 +218,14 @@ export const graphSlice = createSlice({
       state,
       action: PayloadAction<{
         id: NodeId
-        updater: (node: AnyNode) => AnyNode
+        obj: Partial<AnyNode>
       }>
     ) => {
       state.current.nodes = state.current.nodes.map((b) => {
         if (b.id !== action.payload.id) {
           return b
         }
-        return action.payload.updater(b)
+        return { ...b, ...action.payload.obj } as AnyNode
       })
     },
     addEdge: (

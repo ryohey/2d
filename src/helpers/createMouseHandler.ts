@@ -34,11 +34,10 @@ export const useMouseHandler = () => {
           dispatch(
             updateNode({
               id: e.start.node.id,
-              updater: (b) => ({
-                ...b,
+              obj: {
                 x: e.movement.x + e.start.node.x,
                 y: e.movement.y + e.start.node.y,
-              }),
+              },
             })
           )
           break

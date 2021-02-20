@@ -22,12 +22,11 @@ export const EditFuncModal: FC<EditFuncModalProps> = ({ closeModal, node }) => {
     dispatch(
       updateNode({
         id: modalInput.id,
-        updater: (b) => ({
-          ...b,
+        obj: {
           name: modalInput.name,
           code: modalInput.code,
           isAsync: modalInput.isAsync,
-        }),
+        },
       })
     )
   }

@@ -45,7 +45,7 @@ export const App: FC<{}> = () => {
       />
       <DragContainer {...mouseHandler} className="main">
         <div className="content">
-          <ToolBox codeStore={codeStore} />
+          <ToolBox />
           <Stage graphStore={graphStore} />
           <CodeOutput graphStore={graphStore} />
         </div>

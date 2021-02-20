@@ -1,4 +1,5 @@
-import { observable, makeObservable } from "mobx"
+import { atom } from "recoil"
+import exampleCodes from "../helpers/exampleCodes"
 
 export interface Code {
   code: string
@@ -6,12 +7,7 @@ export interface Code {
   inputNames: string[]
 }
 
-export class CodeStore {
-  codes: Code[] = []
-
-  constructor() {
-    makeObservable(this, {
-      codes: observable,
-    })
-  }
-}
+export const codeState = atom<Code[]>({
+  key: "codeState",
+  default: exampleCodes(),
+})

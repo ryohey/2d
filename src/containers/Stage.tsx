@@ -2,7 +2,11 @@ import React, { FC, MouseEvent, useState } from "react"
 import { useRecoilValue } from "recoil"
 import { DrawCanvas } from "../components/DrawCanvas"
 import { DropDownMenu } from "../components/DropDownMenu"
-import { GraphStore, previewEdgeState } from "../stores/GraphStore"
+import {
+  GraphStore,
+  previewEdgeState,
+  previewNodeState,
+} from "../stores/GraphStore"
 import { NodeId } from "../topology/Graph"
 import { IPoint, isVariableNode } from "../types"
 import { EditFuncModal } from "./EditFuncModal"
@@ -18,7 +22,7 @@ export interface StageState {
 }
 
 export const Stage: FC<StageProps> = ({ graphStore }) => {
-  const { previewNode } = graphStore
+  const previewNode = useRecoilValue(previewNodeState)
   const previewEdge = useRecoilValue(previewEdgeState)
   const [container, setContainer] = useState<HTMLElement | null>(null)
   const [blockElements, setBlockElements] = useState<{

@@ -1,11 +1,16 @@
 import { useCallback } from "react"
-import { useSetRecoilState } from "recoil"
+import { useRecoilState, useSetRecoilState } from "recoil"
 import { DragBeginEvent, DragEndEvent, DragMoveEvent } from "../components/Drag"
 import { Code } from "../stores/CodeStore"
-import { GraphStore, previewEdgeState } from "../stores/GraphStore"
+import {
+  GraphStore,
+  previewEdgeState,
+  previewNodeState,
+} from "../stores/GraphStore"
 
 export const useMouseHandler = (graphStore: GraphStore) => {
   const setPreviewEdge = useSetRecoilState(previewEdgeState)
+  const [previewNode, setPreviewNode] = useRecoilState(previewNodeState)
 
   const onMouseDown = useCallback((e: DragBeginEvent) => {
     if (e.start === null) {
@@ -28,14 +33,14 @@ export const useMouseHandler = (graphStore: GraphStore) => {
           break
         case "ToolBoxItem":
           const code: Code = e.start.code
-          graphStore.previewNode = {
+          setPreviewNode({
             ...code,
             id: 0,
             type: "FuncNode",
             linked: false,
             x: e.startPosition.x + e.movement.x,
             y: e.startPosition.y + e.movement.y,
-          }
+          })
           break
         case "FuncNodeOutput":
           setPreviewEdge({
@@ -48,38 +53,40 @@ export const useMouseHandler = (graphStore: GraphStore) => {
           break
       }
     },
-    [graphStore, setPreviewEdge]
+    [graphStore, setPreviewNode, setPreviewEdge]
   )
 
-  const onMouseUp = useCallback((e: DragEndEvent) => {
-    console.log(e)
-    if (e.start !== null) {
-      if (e.end !== null) {
-        if (
-          e.start.type === "FuncNodeOutput" &&
-          e.end.type === "FuncNodeInput"
-        ) {
-          graphStore.addEdge(e.start.node.id, e.end.node.id, e.end.index)
-        }
-        // 同じポートでドラッグした場合はエッジを削除
-        if (
-          e.start.type === "FuncNodeOutput" &&
-          e.end.type === "FuncNodeOutput" &&
-          e.start.node.id === e.end.node.id
-        ) {
-          graphStore.removeEdge(e.start.node.id)
-        }
-      } else {
-        if (e.start.type === "ToolBoxItem") {
-          const { previewNode } = graphStore
-          if (previewNode) {
-            graphStore.previewNode = null
-            graphStore.addNode(previewNode)
+  const onMouseUp = useCallback(
+    (e: DragEndEvent) => {
+      console.log(e)
+      if (e.start !== null) {
+        if (e.end !== null) {
+          if (
+            e.start.type === "FuncNodeOutput" &&
+            e.end.type === "FuncNodeInput"
+          ) {
+            graphStore.addEdge(e.start.node.id, e.end.node.id, e.end.index)
+          }
+          // 同じポートでドラッグした場合はエッジを削除
+          if (
+            e.start.type === "FuncNodeOutput" &&
+            e.end.type === "FuncNodeOutput" &&
+            e.start.node.id === e.end.node.id
+          ) {
+            graphStore.removeEdge(e.start.node.id)
+          }
+        } else {
+          if (e.start.type === "ToolBoxItem") {
+            if (previewNode) {
+              setPreviewNode(null)
+              graphStore.addNode(previewNode)
+            }
           }
         }
       }
-    }
-  }, [])
+    },
+    [previewNode, setPreviewNode]
+  )
 
   return {
     onMouseDown,

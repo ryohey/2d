@@ -12,8 +12,13 @@ import {
   IFuncNode,
   isFuncNode,
   isReferenceFuncNode,
-  PreviewEdge
+  PreviewEdge,
 } from "../types"
+
+export const previewNodeState = atom<DisplayFuncNode | null>({
+  key: "previewNodeState",
+  default: null,
+})
 
 export const previewEdgeState = atom<PreviewEdge | null>({
   key: "previewEdgeState",
@@ -24,15 +29,12 @@ export class GraphStore {
   nodes: AnyNode[] = []
   edges: FuncEdge[] = []
 
-  previewNode: DisplayFuncNode | null = null
-
   editingNode: AnyNode | null = null
 
   constructor() {
     makeObservable(this, {
       nodes: observable,
       edges: observable,
-      previewNode: observable,
       editingNode: observable,
       addNode: action,
       dupulicateNode: action,

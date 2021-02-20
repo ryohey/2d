@@ -68,7 +68,7 @@ export const useMouseHandler = () => {
           break
       }
     },
-    [nodes, dispatch]
+    [dispatch]
   )
 
   const onMouseUp = useCallback(
@@ -110,7 +110,7 @@ export const useMouseHandler = () => {
       dispatch(setPreviewNode(null))
       dispatch(setPreviewEdge(null))
     },
-    [nodes, edges, previewNode, dispatch]
+    [previewNode, dispatch]
   )
 
   return {
